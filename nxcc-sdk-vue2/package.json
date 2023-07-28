@@ -1,0 +1,12 @@
+{
+  "name": "nx-cc-vue2",
+  "version": "1.0.14",
+  "description": "",
+  "main": "nx-cc-vue2.common.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
