@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>NXWPHONE</title>
+    <style>
+      h1 {
+        font-family: "Courier New", Courier, monospace;
+      }
+
+      input {
+        width: 230px;
+      }
+
+      td {
+        font-family: Arial, Helvetica, sans-serif;
+        font-weight: 400;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>NXCC</h1>
+    <h3>通过点击Connect进行话机注册</h3>
+    <table>
+      <tr>
+        <td>Email:</td>
+        <td>
+          <input type="text" id="nxuser">
+        </td>
+      </tr>
+      <tr>
+        <td>Password:</td>
+        <td>
+          <input type="password" id="nxpass"/>
+        </td>
+      </tr>
+    </table>
+    <br />
+    <button id="connect">Connect</button>
+    <br />
+    <br />
+    <button id="call">Call</button>
+    <button id="answer">Answer</button>
+    <button id="hangup">Hangup</button>
+
+    <audio style="display: none" id="remoteAudio" controls></audio>
+    <audio style="display: none" id="playAudio" controls></audio>
+
+    <script src="./lib/nxwebrtc.js"></script>
+    <script src="./lib/md5.js"></script>
+    <script>
+      let NxwCall = NXW.default;
+      let nxwcall = null;
+      let currentUser = null;
+
+      // 获取注册信息后进行话机注册
+      function initApp() {
+        // 登录获取token
+        /* 
+        请求体
+        curl --location --request PUT 'https://nxlink.nxcloud.com/admin/saas_plat/user/login' \
+        --header 'lang: zh_CN' \
+        --header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+          loginMethod: 0， // 0 邮箱方式登录 1 手机号方式登录
+          email: "email"， // 邮箱方式登录，手机号登陆：phone： “phone”, 
+          password: "password",
+          graphVerificationCode: "", // 必填，空字符串
+          key: ""   // 必填，空字符串
+        }'
+        返回体
+        {
+            "code": 0,
+            "message": "",
+            "data": {
+                "token": "eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjEsInV1SWQiOiI2NGMyMjBjNmIxYmMyNjUyM2NjMTIyZmQifQ.uMMrkXVSAXht0AN_KlxN2LHhS9GwlmTYYp61Rm0QXGk",
+                "lang": "zh_CN",
+                "time_zone_id": 105,
+                "time_zone": "UTC+08:00"
+            },
+            "traceId": "f062fc22055bd86f236ea63032fed48e"
+        }
+        */
+
+        //  获取token后，调用register接口获取话机信息
+        /*
+          请求体
+          curl --location --request POST 'https://nxlink.nxcloud.com/cc/fs/webCall/register' \
+          --header 'usertoken: eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjEsInV1SWQiOiI2NGMxY2I2Y2IxYmNlYzE0NjM1ZTIyMGUifQ.rYlUFXIqTnP9vCAkkHIU_jGl5SO_oBJq4nzKp8Ivx7g' \
+          --header 'lang: zh_CN' \
+          --header 'Authorization;' \
+          --header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+              "agentName": "8618344031797"
+          }'
+          返回体
+          {
+              "reqId": "41aa5b571b66b33c028c1ef1b1204ecf",
+              "code": 0,
+              "msg": "请求成功",
+              "data": {
+                  "domain": "domain", // 域名
+                  "groupNo": "groupNo", // 坐席组
+                  "sipNum": "sipNum", // 坐席账号
+                  "url": "wssurl", // wssurl
+                  "email": "email", // 邮箱
+                  "tenantNickName": ’tenantNickName‘,// 租户昵称
+                  "company": ’company‘, // 认证企业
+                  "tenantName": ’tenantName‘, // 租户
+                  "roleName": ’roleName‘, // 角色
+                  "utcDate": "2023/07/27", //utc时间
+              }
+          }
+        */
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open(
+          "put",
+          "https://nxlink.nxcloud.com/admin/saas_plat/user/login"
+        );
+        xmlHttp.setRequestHeader("Content-Type", "application/json");
+        if(!NXW.getInput("nxuser").value || !NXW.getInput("nxpass").value){
+          return alert('邮箱或密码为空')
+        }
+        let loginInfo = {
+          email: NXW.getInput("nxuser").value,
+          graphVerificationCode: "",
+          key: "",
+          loginMethod: 0,
+          password: NXW.getInput("nxpass").value
+        };
+        xmlHttp.send(JSON.stringify(loginInfo)); // 请求体数据
+        xmlHttp.onreadystatechange = function () {
+          if (this.status == 200) {
+            let tokenInfo = JSON.parse(this.responseText);
+            xmlHttp.open(
+              "post",
+              "https://nxlink.nxcloud.com/cc/fs/webCall/register"
+            );
+            xmlHttp.setRequestHeader("Content-Type", "application/json");
+            xmlHttp.setRequestHeader("usertoken", tokenInfo.data.token);
+            let getInfo = {
+              agentName: loginInfo.email
+            };
+            xmlHttp.send(JSON.stringify(getInfo)); // 请求体数据
+            xmlHttp.onreadystatechange = function () {
+              if (this.status == 200) {
+                let sipsData = JSON.parse(this.responseText);
+                let sips = sipsData.data;
+                //  register接口获取成功后进行话机注册流程
+                let passWord = hex_md5(
+                  sips.email + ":" + sips.domain + ":" + sips.utcDate
+                ); // 通过MD5加密传递密码
+                console.log(passWord);
+                let profile = {
+                  nxuser: sips.sipNum, // 话机信息中的sipNum坐席账号
+                  nxpass: passWord, // MD5加密后的密码
+                  nxtype: 7,
+                  logLevel: "debug",
+                  retries: 0,
+                  playTone: 255,
+                  audioElementId: "remoteAudio",
+                  playElementId: "playAudio",
+                  audioSrcPath:
+                    "https://nxcc-sgp-test-1259196162.cos.ap-singapore.myqcloud.com/static/resource/audio",
+                  domain: sips.domain, // 话机信息中的doman域名
+                  wssurl: sips.url, // 话机信息中的wssurl
+                  ccAgent: sips.email, // 话机信息中的email邮箱
+                  ccToken: tokenInfo.data.token, //  登录接口获取的token'
+                  ccQueue: sips.groupNo // 话机信息中的ccQueue坐席组
+                };
+                console.log("profile=", profile, "nxwcall=", nxwcall);
+
+                //改变nxuser
+                if (currentUser != profile.nxuser) {
+                  if (nxwcall) {
+                    console.log("change profile=", profile);
+                    nxwcall.disconnect();
+                    delete nxwcall;
+                    nxwcall = null;
+                  }
+                  currentUser = profile.nxuser;
+                }
+                //创建对象
+                if (nxwcall == null) {
+                  nxwcall = new NxwCall(profile);
+                  setupEvents(nxwcall);
+                  console.log("initApp done nxuser=" + profile.nxuser);
+                }
+              }
+            };
+          }
+        };
+      }
+
+      //可选：处理events
+      let list = [];
+
+      function setupEvents(nxwcall) {
+        if (nxwcall == null) {
+          console.log("skip setupEvents");
+          return;
+        }
+
+        let e = nxwcall.myEvents;
+        console.log("setupEvents e=", e);
+
+        e.on("onCallCreated", function (param1) {
+          console.log("================", "onCallCreated", param1);
+          list.push({ ts: new Date(), key: "onCallCreated", value: param1 });
+        });
+        e.on("onCallAnswered", function (param1) {
+          console.log("================", "onCallAnswered", param1);
+          list.push({ ts: new Date(), key: "onCallAnswered", value: param1 });
+        });
+        e.on("onCallReceived", function (param1) {
+          console.log("================", "onCallReceived", param1);
+          console.log("orderIdComing=" + nxwcall.comingOrderId);
+          list.push({ ts: new Date(), key: "onCallReceived", value: param1 });
+        });
+        e.on("onCallHangup", function (param1) {
+          console.log("================", "onCallHangup", param1);
+          list.push({ ts: new Date(), key: "onCallHangup", value: param1 });
+        });
+        e.on("onRegistered", function (param1) {
+          console.log("================", "onRegistered", param1);
+          list.push({ ts: new Date(), key: "onRegistered", value: param1 });
+        });
+        e.on("onServerConnect", function (param1) {
+          console.log("================", "onServerConnect", param1);
+          list.push({ ts: new Date(), key: "onServerConnect", value: param1 });
+        });
+        e.on("onConnectOK", function (param1) {
+          console.log("================", "onConnectOK", param1);
+          list.push({ ts: new Date(), key: "onConnectOK", value: param1 });
+        });
+        e.on("onRegisterOK", function (param1) {
+          console.log("================", "onRegisterOK", param1);
+          list.push({ ts: new Date(), key: "onRegisterOK", value: param1 });
+        });
+
+        e.on("error", function (param1) {
+          console.log("================", "error", param1);
+          list.push({ ts: new Date(), key: "error", value: param1 });
+        });
+      }
+
+      // Add click listener to call button
+      // console.log("button=", NXW.getButton('connect'))
+      NXW.getButton("connect").addEventListener("click", () => {
+        console.log("click call Button nxwcall=", nxwcall);
+        initApp();
+      });
+      NXW.getButton("call").addEventListener("click", () => {
+        console.log("click call Button nxwcall=", nxwcall);
+        //initApp();
+
+        if (nxwcall) {
+          // //发起呼叫
+          // let target = NXW.getInput("targetAOR").value;
+          // let hdrs = new Array("X-NXRTC-Key: value", "X-NXRTC-Abc: 123");
+          // console.log("ready call target ", target, hdrs);
+          // nxwcall.myOrderId = NXW.getInput("orderId").value;
+          nxwcall.placeCall("4444");
+          // nxwcall.placeCall(target,hdrs);
+        }
+      });
+      NXW.getButton("hangup").addEventListener("click", () => {
+        console.log("click disconnect Button nxwcall=", nxwcall);
+        if (nxwcall != null) {
+          console.log("hdrs=", nxwcall.myDataHdrs);
+          nxwcall.hangupCall();
+          // nxwcall.disconnect()
+        }
+      });
+      NXW.getButton("answer").addEventListener("click", () => {
+        console.log("click answer Button nxwcall=", nxwcall);
+        if (nxwcall != null) {
+          let hdrs = ["X-NXRTC-Answer: order-123"];
+          nxwcall.myOrderId = nxwcall.comingOrderId;
+          nxwcall.answerCall(hdrs);
+        }
+      });
+
+      window.onbeforeunload = function () {
+        if (nxwcall) {
+          nxwcall.hangupCall();
+        }
+      };
+    </script>
+  </body>
+</html>
