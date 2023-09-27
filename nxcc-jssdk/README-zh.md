@@ -32,14 +32,16 @@ https://nxlink.nxcloud.com//admin/saas_plat/user/login     api请求获取Token
 
 ```
 请求体
-curl --location --request POST 'https://nxlink.nxcloud.com/admin/saas_plat/user/login' \
+curl --location --request PUT 'https://nxlink.nxcloud.com/admin/saas_plat/user/login' \
 --header 'lang: zh_CN' \
 --header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)' \
 --header 'Content-Type: application/json' \
 --data-raw '{
 	loginMethod: 0， // 0 邮箱方式登录 1 手机号方式登录
 	email: "email"， // 邮箱方式登录，手机号登陆：phone： “phone”, 
-	password: "password"
+	password: "password",
+    graphVerificationCode: "", // 必填，空字符串
+    key: ""   // 必填，空字符串
 }'
 返回体
 {
@@ -95,7 +97,7 @@ curl --location --request POST 'https://nxlink.nxcloud.com/cc/fs/webCall/registe
 #### 3. 定义profile
 ```js
 let profile = {
-    nxuser: “xxxxxxxx”, 
+    nxuser: “xxxxxxxx”,  // 话机信息中的sipNum坐席账号
     nxpass:”xxxxxxx”, // 需md5加密，如：MD5(email + ":" + domain + ":" + utcDate)
     logLevel: "error", 
     playTone: 0xFF, 
@@ -103,11 +105,11 @@ let profile = {
     audioElementId: "remoteAudio", 
     playElementId: "playAudio",
     audioSrcPath: "https://nxcc-sgp-test-1259196162.cos.ap-singapore.myqcloud.com/static/resource/audio",
-    domain: `${domain}`,
-    wssurl: `${wssurl}`,
-    ccAgent: `${email}`,
-    ccToken: `${Token}`,
-    ccQueue: `${groupNo}`
+    domain: `${domain}`,  // 话机信息中的doman域名
+    wssurl: `${wssurl}`,  // 话机信息中的wssurl
+    ccAgent: `${email}`,  // 话机信息中的email邮箱
+    ccToken: `${Token}`,    //  登录接口获取的token'
+    ccQueue: `${groupNo}`  // 话机信息中的ccQueue坐席组
   };
 ```
  - audioElementId与playElementId 是页面的audio组件的id
@@ -131,8 +133,8 @@ function setupEvents(nxwcall) {
     let e = nxwcall.myEvents;
     console.log("setupEvents e=", e)
 
-    e.on("onCallCreated", function (desnationNumber) {  // 发起呼叫
-        console.log("================", "onCallCreated", desnationNumber)        
+    e.on("placeCall", function (desnationNumber) {  // 发起呼叫
+        console.log("================", "placeCall", desnationNumber)        
     });
     e.on("onRegistered", function (sipId) { // 话机注册成功
         console.log("================", "onRegistered", sipId)        

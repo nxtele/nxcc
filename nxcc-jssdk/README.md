@@ -37,14 +37,16 @@ let nxwcall = null; // the global instance of the object, not yet initialized
 
 ```
 request
-curl --location --request POST '/admin/saas_plat/user/login' \
+curl --location --request PUT 'https://nxlink.nxcloud.com/admin/saas_plat/user/login' \
 --header 'lang: zh_CN' \
 --header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)' \
 --header 'Content-Type: application/json' \
 --data-raw '{
 	loginMethod: 0， // 0 Log in by email， 1 Log in with your mobile phone number
 	email: "email"， // Log in by email，Mobile phone number login：phone： “phone”,
-	password: "password"
+	password: "password",
+  graphVerificationCode: "", // Required, empty string
+  key: ""   // Required, empty string
 }'
 body
 {
@@ -80,16 +82,16 @@ body
     "code": 0,
     "msg": "succees",
     "data": {
-        "domain": "domain",
+        "domain": "domain",  // domain
         "groupNo": "groupNo",  // Agent groups
         "sipNum": "sipNum",  // Agent account
         "url": "wssurl",  // wssurl
         "email": "email",  // email
-        "tenantNickName": ’tenantNickName‘,
-        "company": ’company‘,
-        "tenantName": ’tenantName‘,
-        "roleName": ’roleName‘,
-        "utcDate": "2023/07/27",
+        "tenantNickName": "tenantNickName",  // Tenant nickname
+        "company": "company",  // Certified Enterprise
+        "tenantName": "tenantName",  // Tenant Name
+        "roleName": "roleName",  // role
+        "utcDate": "2023/07/27",  //utc time
     }
 }
 
@@ -99,19 +101,19 @@ body
 
 ```js
 let profile = {
-  nxuser: "xxxxxxx",
-  nxpass: "xxxxxxx",
+  nxuser: "xxxxxxx",  // SipNum agent account in phone information
+  nxpass: "xxxxxxx",  // Require MD5 encryption, such as: MD5 (email+":"+domain+":"+utcDate)
   logLevel: "error",
   playTone: 0xff,
   nxtype: 6,
   audioElementId: "remoteAudio",
   playElementId: "playAudio",
   audioSrcPath: "https://nxcc-sgp-test-1259196162.cos.ap-singapore.myqcloud.com/static/resource/audio",
-    domain: `${domain}`,
-    wssurl: `${wssurl}`,
-    ccAgent: `${email}`,
-    ccToken: `${Token}`,
-    ccQueue: `${groupNo}`
+  domain: `${domain}`,  // DOMAN Domain Name in Phone Information
+  wssurl: `${wssurl}`,  // Wssurl in phone information
+  ccAgent: `${email}`,  // Email email in phone information
+  ccToken: `${Token}`,    //  Token obtained from login interface'
+  ccQueue: `${groupNo}`  // CcQueue Agent Group in Phone Information
 };
 ```
 
@@ -138,8 +140,8 @@ function setupEvents(nxwcall) {
   let e = nxwcall.myEvents;
   console.log("setupEvents e=", e);
 
-  e.on("onCallCreated", function(desnationNumber) {
-    console.log("================", "onCallCreated", desnationNumber);
+  e.on("placeCall", function(desnationNumber) {
+    console.log("================", "placeCall", desnationNumber);
   });
   e.on("onRegistered", function(sipId) {
     console.log("================", "onRegistered", sipId);
