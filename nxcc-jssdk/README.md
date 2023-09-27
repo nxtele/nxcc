@@ -24,7 +24,7 @@ When jssdk logs in, you need to use the nxlink account, which is the account pas
 
 ```html
 <script src="your/path/nxwebrtc.js"></script>
-```
+``` 
 
 ```js
 let NxwCall = NXW.default; //Type declaration of the object

@@ -28,7 +28,7 @@ let nxwcall = null;         //对象的全局实例，尚未初始化
 
 #### 2. 获取TOKEN、话机注册信息
 
-https://nxlink.nxcloud.com//admin/saas_plat/user/login     api请求获取Token
+https://nxlink.nxcloud.com//admin/saas_plat/user/login     api请求获取Token 
 
 ```
 请求体
