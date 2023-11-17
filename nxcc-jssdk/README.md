@@ -6,7 +6,7 @@
 
 ### Get NXLINK account
 
-When jssdk logs in, you need to use the nxlink account, which is the account password required to obtain the TOKEN interface in the following example. You can log in to the [NXLINK](https://nxlink.nxcloud.com/admin/#/register) to obtain and manage them.
+When jssdk logs in, you need to use the nxlink account, which is the account password required to obtain the TOKEN interface in the following example. You can log in to the [NXLINK](https://nxlink.nxcloud.com/admin/#/register) to obtain and manage them.（The account is single sign-on）
 
 ## SDK Instructions
 
@@ -24,7 +24,7 @@ When jssdk logs in, you need to use the nxlink account, which is the account pas
 
 ```html
 <script src="your/path/nxwebrtc.js"></script>
-``` 
+```
 
 ```js
 let NxwCall = NXW.default; //Type declaration of the object
@@ -33,12 +33,12 @@ let nxwcall = null; // the global instance of the object, not yet initialized
 
 #### 2. Obtain TOKEN and phone registration information
 
-/admin/saas_plat/user/login -- THE API REQUEST TO OBTAIN THE TOKEN
+/admin/saas_plat/user/login -- THE API REQUEST TO OBTAIN THE TOKEN(If the token does not perform any operation, it expires within 5 hours, and it will be renewed if there is an interface request)
 
 ```
 request
 curl --location --request PUT 'https://nxlink.nxcloud.com/admin/saas_plat/user/login' \
---header 'lang: zh_CN' \
+--header 'lang: en_US' \
 --header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -69,7 +69,7 @@ body
 request
 curl --location --request POST 'cc/fs/webCall/register' \
 --header 'usertoken: eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjEsInV1SWQiOiI2NGMxY2I2Y2IxYmNlYzE0NjM1ZTIyMGUifQ.rYlUFXIqTnP9vCAkkHIU_jGl5SO_oBJq4nzKp8Ivx7g' \
---header 'lang: zh_CN' \
+--header 'lang: en_US' \
 --header 'Authorization;' \
 --header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)' \
 --header 'Content-Type: application/json' \
@@ -137,39 +137,187 @@ function initApp() {
 
 ```js
 function setupEvents(nxwcall) {
-  let e = nxwcall.myEvents;
-  console.log("setupEvents e=", e);
-
-  e.on("placeCall", function(desnationNumber) {
-    console.log("================", "placeCall", desnationNumber);
-  });
-  e.on("onRegistered", function(sipId) {
-    console.log("================", "onRegistered", sipId);
-  });
-  e.on("onCallReceived", function(callerNumber) {
-    console.log("================", "onCallReceived", callerNumber);
-  });
-  e.on("onCallAnswered", function() {
-    console.log("================", "onCallAnswered");
-  });
-  e.on("onAccept", function(param1) { // Get the CcallId
-    console.log("=====Get the parameters======", "onAccept", param1);
-  });
-  e.on("onServerDisconnect", function(param1) {
-    console.log("=====Get the parameters======", "onServerDisconnect", param1);
-  });
-  e.on("onServerConnect", function(param1) {
-    console.log("================", "onServerConnect", param1);
-  });
-  e.on("onUnregistered", function(param1) {
-    console.log("=====Get the parameters======", "onUnregistered", param1);
-  });
+    let e = nxwcall.myEvents;
+    console.log("setupEvents e=", e)
+	
+    // Make a call
+    e.on("placeCall", function () {
+        console.log("================", "placeCall")        
+    });
+    
+    // The phone is successfully registered
+    e.on("onRegistered", function () {
+        console.log("================", "onRegistered")        
+    });
+    
+    // Incoming calls
+    e.on("onCallReceived", function (param1) {
+        console.log("================", "onCallReceived", param1)
+        // Get the number of the incoming call 
+        const numner = param1.split("@")[0]
+    });
+    
+    // Answer
+    e.on("onCallAnswered", function () {
+        console.log("================", "onCallAnswered")
+        // Get the current call seconds
+        let callTimer = setInterval(() => {
+          const t = nxwcall.talkingTime / 1000;
+          const time = Math.floor(t);
+          let isTimer = parseInt(time);
+          if (isTimer > 0 && isTimer % 180 == 0) {
+            changeSipStatu("Available", "In a queue call");
+          }
+        }, 1000);
+    });
+    
+    // Outbound calls to get the CcallId
+    e.on("onAccept", function () {
+        console.log("=====Get the parameters======", "onAccept", nxwcall.lastCcCallId);
+    })
+    
+    // hang up
+    e.on("onCallHangup", function () {
+      console.log("=====Actions after hanging up======", "onCallHangup");
+    })
+    
+    // Hang-up reason mapping
+    e.on("onReject", function (param1) {
+        let code = nxwcall.lastCcCode
+        switch (code) {
+            case "810":
+                message.error(‘The phone is in arrears’);
+                break;
+                .... // See the table below for more reasons for hanging up
+        }
+	}）
+    
+    // WSS is disconnected
+    e.on("onServerDisconnect", function (param1) {
+        console.log("=====Get the parameters======", "onServerDisconnect", param1);
+    })
+    
+    // The WSS link was successful
+    e.on("onServerConnect", function (param1) { 
+     	console.log("================", "onServerConnect", param1);
+    })
+    
+    // The phone registration failed
+    e.on("onUnregistered", function () { 
+        // Registration failures reinitialize and start the object
+        initApp()
+    })
+    // A collection of errors
+    e.on("error", function (param1) {
+        console.log("================", "error", param1);
+        // Registration failures reinitialize and start the object
+        initApp();
+    });
 }
 ```
 
+| Code | 挂断原因                                               |
+| ---- | ------------------------------------------------------ |
+| 810  | The phone is in arrears                                |
+| 811  | Countries where calls are not allowed                  |
+| 812  | The number is incorrect                                |
+| 813  | The login information has expired, please log in again |
+| 814  | Call Failed (Blacklist Number)                         |
+| 815  | Call Failure (Call Limit)                              |
+| 816  | The current number is not available                    |
+| 800  | The network is abnormal                                |
+| 801  | The network is abnormal                                |
+| 817  | Today's calling experience is capped.                  |
+| 819  | DID number call failed.                                |
+
 The nxwebrtc SDK library encapsulates multiple <a href='#eventlist'>event notifications</a>, which can interact with business logic in the corresponding event callback functions.
 
-#### 6. Start testing
+#### 6. The status of the phone changes
+
+##### 1. Phone status switching interface
+
+status, state mapping
+
+| Page status     | status    | state           |
+| --------------- | --------- | --------------- |
+| Available       | Available | Waiting         |
+| On break        | On break  | Idle            |
+| In a queue call | Available | In a queue call |
+| Receiving       | Available | Receiving       |
+
+   updateTime: the current timestamp, agentName: the current agent's email address (the email address of the API callback is registered)
+
+```
+   curl --location --request POST 'https://nxlink.nxcloud.com/cc/fs/ccAgent/status/change' \
+   --header 'usertoken: eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjkxLCJ1dUlkIjoiNjUwYTUxZTNiMWJjODBhMjg2NzYxNDM1In0.-8Vtg5Hc0g-		  e_1tHmXI_pSFjQuqD6t5YExoZs_cI3t4' \
+   --header 'lang: zh_CN' \
+   --header 'Authorization;' \
+   --header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)' \
+   --header 'Content-Type: application/json' \
+   --data-raw '{"agentName":"fang.cheng@nxcloud.com","status":"Available","state":"Waiting","updateTime":1699344035}'
+```
+
+##### 2. Different events send different statuses
+
+1. Successful registration is sent once with default status (idle or busy)
+
+   ```
+   e.on("onRegistered", function () {
+       const postForm = {
+       	"agentName":"fang.cheng@nxcloud.com",
+       	"status":"Available",
+       	"state":"Waiting",
+       	"updateTime":1699344035
+       }       
+   });
+   // The current example is the default idle display
+   ```
+
+   
+
+2. The ringing status is sent once, and both placeCall and onCallReceived events need to send the status
+
+   ```
+   e.on("placeCall", function () {
+       const postForm = {
+       	"agentName":"fang.cheng@nxcloud.com",
+       	"status":"Available",
+       	"state":"Receiving",
+       	"updateTime":1699344035
+       }       
+   });
+   ```
+
+3. Send the call status once in a call
+
+   ```
+   e.on("onCallAnswered", function () {
+       const postForm = {
+       	"agentName":"fang.cheng@nxcloud.com",
+       	"status":"Available",
+       	"state":"In a queue call",
+       	"updateTime":1699344035
+       }       
+   });
+   ```
+
+4. The default state before an incoming or outbound call is sent at the end of a call
+
+   ```
+   e.on("onCallHangup", function () {
+       const postForm = {
+       	"agentName":"fang.cheng@nxcloud.com",
+       	"status":"Available",
+       	"state":"Waiting",
+       	"updateTime":1699344035
+       }       
+   });
+   // An example is to restore the default idle state
+   ```
+
+   In order to maintain the consistency of the background and client status, it is recommended to report the request for the current agent to be idle or busy once every five minutes, and do not need to report during ringing or calling
+
+#### 7. Start testing
 
 After the onRegistered callback is completed, the outgoing call can be performed and the incoming call can be processed.
 Local microphone test:
@@ -185,6 +333,63 @@ nxwcall.placeCall("4444");
 ```
 
 After completing the test, your phone channel is ready.
+
+#### 8. Related information interfaces
+
+1. Call log callbacks
+
+   [](https://www.nxcloud.com/document/nxcc/nxccCdr)
+
+2. Obtain the outbound call display number
+
+   ```
+   curl --location --request POST 'https://nxlink.nxcloud.com/cc/api/ccDidNumber/v1/myUsefulNumber' \
+   --header 'usertoken: eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjkxLCJ1dUlkIjoiNjUwYTUxZTNiMWJjODBhMjg2NzYxNDM1In0.-8Vtg5Hc0g-e_1tHmXI_pSFjQuqD6t5YExoZs_cI3t4' \
+   --header 'lang: zh_CN' \
+   --header 'Authorization;' \
+   --header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)'
+   --header 'Content-Type: application/json' \   
+   ```
+
+3. Get the country where it is opened
+
+   ```
+   curl --location --request POST 'https://nxlink.nxcloud.com/cc/api/ccCountry/v1/allForMe' \
+   --header 'usertoken: eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjkxLCJ1dUlkIjoiNjUwYTUxZTNiMWJjODBhMjg2NzYxNDM1In0.-8Vtg5Hc0g-e_1tHmXI_pSFjQuqD6t5YExoZs_cI3t4' \
+   --header 'lang: zh_CN' \
+   --header 'Authorization;' \
+   --header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)'
+   --header 'Content-Type: application/json' \   
+   ```
+
+4. Get the last 30 calls
+
+   ```
+   curl --location --request POST 'https://nxlink.nxcloud.com/cc/api/ccCdr/v/recent' \
+   --header 'usertoken: eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjkxLCJ1dUlkIjoiNjUwYTUxZTNiMWJjODBhMjg2NzYxNDM1In0.-8Vtg5Hc0g-e_1tHmXI_pSFjQuqD6t5YExoZs_cI3t4' \
+   --header 'lang: zh_CN' \
+   --header 'Authorization;' \
+   --header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)' \
+   --header 'Content-Type: application/json' \
+   --data-raw '{"direction":null,"answered":null}'   
+   ```
+
+5. Disconnect the current phone
+
+   ```
+   nxwcall.disconnect();
+   nxwcall = null;
+   ```
+
+6. Log out of the current login account
+
+   ```
+   curl --location --request PUT 'https://nxlink.nxcloud.com/admin/saas_plat/user/logout' \
+   --header 'Authorization: eyJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjkxLCJ1dUlkIjoiNjUwYTUxZTNiMWJjODBhMjg2NzYxNDM1In0.-8Vtg5Hc0g-e_1tHmXI_pSFjQuqD6t5YExoZs_cI3t4' \
+   --header 'lang: zh_CN' \
+   --header 'User-Agent: apifox/1.0.0 (https://www.apifox.cn)'
+   --header 'Content-Type: application/json' \
+   ```
 
 ### Customize playTone
 
@@ -284,10 +489,28 @@ comingOrderId|RW|The already carried orderId information when calling in
 
 #### Make a call
 
+Outbound call signal out
+
 ```js
-placeCall(callNumber)  // target: called number
-let hdrs = new Array("X-NXCC-Out-Caller-Number: ${CallerNumber}");  // hdrs: optional additional sip header
-nxwcall.placeCall(callNumber,hdrs);
+let hdrs = new Array(
+  `X-NXCC-Out-Caller-Number:  ${The selected outbound call display number}`,
+  // callCountry is the country of the current number
+  `X-Callee-Country-Code: ${
+    callCountry == undefined ? "" : callCountry
+  }`
+);
+nxwcall.placeCall(`${callCountry == undefined ? "" : callCountry}${state.numberText}`, hdrs);
+```
+Random display number calls
+
+```js
+let hdrs = new Array(、
+  // callCountry is the country of the current number
+  `X-Callee-Country-Code: ${
+    callCountry == undefined ? "" : callCountry
+  }`
+);
+nxwcall.placeCall(`${callCountry == undefined ? "" : callCountry}${state.numberText}`, hdrs);
 ```
 
 #### Connect the call
