@@ -76,7 +76,7 @@ new Vue({
    const loginInfo = {
        graphVerificationCode: '验证码',
        key: '验证码图片的key',
-       phone: '用户名',
+       email: '用户名',
        password: '密码',
    }
    this.$refs.nxcc.loginSaas(loginInfo);

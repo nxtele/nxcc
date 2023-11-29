@@ -210,7 +210,7 @@ export default {
       let postForm = {
         graphVerificationCode: state.form.verify,
         key: state.info.key,
-        phone: state.form.userName,  //"8618316840928"
+        email: state.form.userName,
         password: state.form.password,
       };
       nxcc.value.loginSaas(postForm);
