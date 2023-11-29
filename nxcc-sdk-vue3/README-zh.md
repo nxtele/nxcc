@@ -99,8 +99,11 @@ const isLogin = (obj) => {
 <nx-dial ref="nxcc" :paramOptions="paramOptions"></nx-dial>
 
 const paramOptions = {
- visible: false, // 控制拨号盘隐藏显示
- number: "", // 传入拨号盘号码
+ visible: false, // 控制拨号盘收起展开
+ callee: "12456", // 传入拨号盘的被叫号码
+ countryCode: "852", // 传入拨号盘的国码
+ hideDialPad: true, // 控制拨号盘的显示隐藏
+ hideCallLog: true, // 控制最近通话组件的显示隐藏
 };
 ```
 
@@ -109,10 +112,9 @@ const paramOptions = {
 ```
 <nx-dial ref="nxcc"></nx-dial>
 let numberOptions：{
-  caller: '1234',    // 主叫，随机号码时为null，可选填
-  callee： '1234',    // 被叫，必填
-  type: 0,    // 0随机号码，1did号码，必填
-  remark: '测试'     //备注，可选填
+  caller: '', // 主叫,传空将根据随机号码呼出
+  callee: "6282123931868", // 被叫，如62******
+  countryCode: "62", // 被叫国码
 } // 需要传入的号码
 nxcc.value.getNumToCall(numberOptions); // 发起拨号
 ```
@@ -210,7 +212,7 @@ export default {
       let postForm = {
         graphVerificationCode: state.form.verify,
         key: state.info.key,
-        phone: state.form.userName,  //"8618316840928"
+        email: state.form.userName,
         password: state.form.password,
       };
       nxcc.value.loginSaas(postForm);
@@ -224,10 +226,9 @@ export default {
     // 直接发起拨号
     const getNumberToCall = () => {
         let numberOptions：{
-          caller: '1234',    // 主叫，随机号码时为null
-          callee： '1234',    // 被叫
-          type: 0,    // 0随机号码，1did号码
-          remark: '测试'     //备注
+          	caller: '', // 主叫,传空将根据随机号码呼出
+  			callee: "6282123931868", // 被叫，如62******
+  			countryCode: "62", // 被叫国码
         } // 需要传入的号码
         nxcc.value.getNumToCall(numberOptions); // 发起拨号
     }
