@@ -121,6 +121,9 @@ isLogin(obj) {
 const paramOptions = {
  visible: false, // 控制拨号盘隐藏显示
  number: "", // 传入拨号盘号码
+ countryCode: "852", // 传入拨号盘的国码
+ hideDialPad: true, // 控制拨号盘的显示隐藏
+ hideCallLog: false, // 控制最近通话组件的显示隐藏
 };
 ```
 
@@ -129,8 +132,9 @@ const paramOptions = {
 ```
 <nx-dial ref="nxcc"></nx-dial>
 let numberOptions：{
-  callee： '861234',    // 被叫，必填
-  countryCode：‘86’ // 被叫号码国码，必填
+  caller: '', // 主叫,有did号码填入did号码；无则填入空字符串，将根据随机号码呼出
+  callee: "6282123931868", // 被叫，如86******
+  countryCode: "62", // 被叫国码
 } // 需要传入的号码
 nxcc.value.getNumToCall(numberOptions); // 发起拨号
 ```
