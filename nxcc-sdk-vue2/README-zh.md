@@ -129,10 +129,8 @@ const paramOptions = {
 ```
 <nx-dial ref="nxcc"></nx-dial>
 let numberOptions：{
-  caller: '1234',    // 主叫，随机号码时为null，可选填
-  callee： '1234',    // 被叫，必填
-  type: 0,    // 0随机号码，1did号码，必填
-  remark: '测试'     //备注，可选填
+  callee： '861234',    // 被叫，必填
+  countryCode：‘86’ // 被叫号码国码，必填
 } // 需要传入的号码
 nxcc.value.getNumToCall(numberOptions); // 发起拨号
 ```
