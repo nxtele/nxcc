@@ -54,8 +54,8 @@ app.use(Nxcc).mount('#app')
 
    ```
    const loginInfo = {
-       graphVerificationCode: '验证码',
-       key: '验证码图片的key',
+       graphVerificationCode: '验证码',   // 选填，可为空字符串
+       key: '验证码图片的key',   // 选填，可为空字符串
        phone: '用户名',
        password: '密码',
    }
@@ -63,6 +63,19 @@ app.use(Nxcc).mount('#app')
    ```
 
 4. 登录成功，话机注册成功
+
+5. 密码输错超过三次获取验证码图片和验证码key
+
+   ```
+   // 监听方法, 当输错三次密码触发
+   <nx-dial ref="nxcc" @loginGetVerify="loginGetVerify"></nx-dial>
+   
+   const loginGetVerify = (verifyInfo) => {
+     console.log("验证码图片和验证码key", verifyInfo);
+   };
+   ```
+
+   
 
 #### 4.话机是否注册成功 
 
@@ -109,13 +122,21 @@ const paramOptions = {
 
 #### 8.用户自定义按钮直接拨号
 
+获取主叫号码列表
+
+```
+nxcc.value.getDidExternals((res) => {
+  console.log(’主叫号码列表‘， res)
+});
+```
+
 ```
 <nx-dial ref="nxcc"></nx-dial>
 let numberOptions：{
-  caller: '', // 主叫,传空将根据随机号码呼出
+  caller: '', // 主叫,主叫传空将根据随机号码呼出
   callee: "6282123931868", // 被叫，如62******
   countryCode: "62", // 被叫国码
-  orderId: "66493f1afaa3",  // 自定义orderId
+  orderId: "66493f1afaa3",  // 自定义orderId， 可选填
 } // 需要传入的号码
 nxcc.value.getNumToCall(numberOptions); // 发起拨号
 ```
@@ -230,6 +251,7 @@ export default {
           	caller: '', // 主叫,传空将根据随机号码呼出
   			callee: "6282123931868", // 被叫，如62******
   			countryCode: "62", // 被叫国码
+  			orderId: "66493f1afaa3",  // 自定义orderId， 可选填
         } // 需要传入的号码
         nxcc.value.getNumToCall(numberOptions); // 发起拨号
     }
