@@ -60,7 +60,7 @@ new Vue({
    html:
    <nx-dial ref="nxcc"></nx-dial>
    ```
-   
+
 2. 获取验证码图片和key
 
    ```
@@ -84,6 +84,16 @@ new Vue({
 
 4. 登录成功，话机注册成功
 
+5. 密码输错超过三次获取验证码图片和验证码key
+
+   ```
+   // 监听方法, 当输错三次密码触发
+   <nx-dial ref="nxcc" @loginGetVerify="loginGetVerify"></nx-dial>
+   
+   const loginGetVerify = (verifyInfo) => {
+     console.log("验证码图片和验证码key", verifyInfo);
+   };
+
 #### 4.话机是否注册成功 
 
 ```
@@ -94,7 +104,27 @@ new Vue({
 };
 ```
 
-#### 5.退出登录方法
+#### 5.话机状态
+
+```
+<nx-dial ref="nxcc" @dialStatus="dialStatus"></nx-dial>
+
+dialStatus(obj){
+  console.log('当前状态', obj.status)
+}
+```
+
+| Code | 话机状态             |
+| ---- | -------------------- |
+| 0    | 呼出中               |
+| 1    | 呼入中               |
+| 2    | 通话中               |
+| 3    | 话机断开，请刷新重连 |
+| 4    | 话机注册成功         |
+| 5    | 挂断                 |
+| -1   | 话机注册失败         |
+
+#### 6.退出登录方法
 
 ```
 <nx-dial ref="nxcc"></nx-dial>
@@ -102,7 +132,7 @@ new Vue({
 this.$refs.nxcc.loginOuts();
 ```
 
-#### 6.判断token是否失效或者是否有坐席
+#### 7.判断token是否失效或者是否有坐席
 
 ```
 <nx-dial ref="nxcc" @isLogin="isLogin"></nx-dial>
@@ -113,7 +143,7 @@ isLogin(obj) {
 };
 ```
 
-#### 7.是否默认弹出拨号盘和拨号盘输入框自动填入号码
+#### 8.是否默认弹出拨号盘和拨号盘输入框自动填入号码
 
 ```
 <nx-dial ref="nxcc" :paramOptions="paramOptions"></nx-dial>
@@ -124,17 +154,27 @@ const paramOptions = {
  countryCode: "852", // 传入拨号盘的国码
  hideDialPad: true, // 控制拨号盘的显示隐藏
  hideCallLog: true, // 控制最近通话组件的显示隐藏
+ hideTips：false, // 隐藏话机注册成功、话机断开刷新提示，true: 隐藏, false: 打开
 };
 ```
 
 #### 8.用户自定义按钮直接拨号
 
+获取主叫号码列表
+
+```
+this.$refs.nxcc.getDidExternals((res) => {
+  console.log(’主叫号码列表‘， res)
+});
+```
+
 ```
 <nx-dial ref="nxcc"></nx-dial>
 let numberOptions：{
-  caller: '', // 主叫,传空将根据随机号码呼出
+  caller: '', // 主叫,主叫传空将根据随机号码呼出
   callee: "6282123931868", // 被叫，如62******
   countryCode: "62", // 被叫国码
+  orderId: "66493f1afaa3",  // 自定义orderId， 可选填
 } // 需要传入的号码
 nxcc.value.getNumToCall(numberOptions); // 发起拨号
 ```
@@ -240,6 +280,7 @@ export default {
         caller: '', // 主叫,传空将根据随机号码呼出
   		callee: "6282123931868", // 被叫，如62******
   		countryCode: "62", // 被叫国码
+  		orderId: "66493f1afaa3",  // 自定义orderId， 可选填
       };
       this.$refs.nxcc.getNumToCall(numberOptions);
     },
