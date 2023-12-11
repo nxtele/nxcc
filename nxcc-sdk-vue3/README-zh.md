@@ -115,7 +115,7 @@ let numberOptions：{
   caller: '', // 主叫,传空将根据随机号码呼出
   callee: "6282123931868", // 被叫，如62******
   countryCode: "62", // 被叫国码
-  orderId: "",  // 自定义orderId
+  orderId: "66493f1afaa3",  // 自定义orderId
 } // 需要传入的号码
 nxcc.value.getNumToCall(numberOptions); // 发起拨号
 ```
