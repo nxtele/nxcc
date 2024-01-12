@@ -153,8 +153,8 @@ const paramOptions = {
  visible: false, // 控制拨号盘隐藏显示
  callee: "", // 传入拨号盘中的被叫号码
  countryCode: "852", // 传入拨号盘的国码
- hideDialPad: true, // 控制拨号盘的显示隐藏
- hideCallLog: true, // 控制最近通话组件的显示隐藏
+ hideDialPad: true, // 控制拨号盘的显示隐藏，true: 显示，false: 隐藏
+ hideCallLog: true, // 控制最近通话组件的显示隐藏，true: 显示，false: 隐藏
  hideTips：false, // 隐藏话机注册成功、话机断开刷新提示，true: 隐藏, false: 打开
 };
 ```
@@ -173,10 +173,10 @@ this.$refs.nxcc.getDidExternals((res) => {
 <nx-dial ref="nxcc"></nx-dial>
 let numberOptions：{
   caller: '', // 主叫,主叫传空将根据随机号码呼出
-  callee: "6282123931868", // 被叫，如62******
-  countryCode: "62", // 被叫国码
+  callee: "85282123931868", // 被叫，需带国码，例如呼叫香港方向：852******
+  countryCode: "852", // 被叫国码
   orderId: "66493f1afaa3",  // 自定义orderId， 可选填
-} // 需要传入的号码
+}
 nxcc.value.getNumToCall(numberOptions); // 发起拨号
 ```
 
@@ -279,8 +279,8 @@ export default {
     toCall() {
       let numberOptions = {
         caller: '', // 主叫,传空将根据随机号码呼出
-  		callee: "6282123931868", // 被叫，如62******
-  		countryCode: "62", // 被叫国码
+  		callee: "85282123931868", // 被叫，需带国码，例如呼叫香港方向：852******
+  		countryCode: "852", // 被叫国码
   		orderId: "66493f1afaa3",  // 自定义orderId， 可选填
       };
       this.$refs.nxcc.getNumToCall(numberOptions);

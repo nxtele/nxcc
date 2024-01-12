@@ -12,7 +12,7 @@ When jssdk logs in, you need to use the nxlink account, which is the account pas
 
 ### SDK usage steps
 
-1. Import lib’s nxwebrtc.js.
+1. Import [nxwebrtc.js](https://github.com/nxtele/nxcc/blob/main/nxcc-jssdk/lib/nxwebrtc.js).
 2. Define profile, set nxuser, nxpass (sip account), logLevel, playTone and other attributes,
 3. new NxwCall(profile) creates the object nxwcall and sets the callback method based on nxwcall.myEvents.
 4. nxwcall will automatically start the state machine. After the registration is successful, it will enter the UA_READY state, and you can call in and out.
@@ -231,6 +231,36 @@ function setupEvents(nxwcall) {
 | 819  | DID number call failed.                                |
 
 The nxwebrtc SDK library encapsulates multiple <a href='#eventlist'>event notifications</a>, which can interact with business logic in the corresponding event callback functions.
+1. ##### Inbound, outbound, and auto-dialing are distinguished from manual scenarios
+
+   Set the mapping parameters
+
+   ```js
+   // 0:Inbound, 1:Outbound, 2:Auto-dialed to manual
+   let direction
+   ```
+
+   Inbound、Auto-dialed to manual
+
+   ```js
+   e.on("onCallReceived", function () {
+   	// nxwcall is the parameter of the setupEvents function
+   	// nxDirectionType: 0:Inbound，2:Auto-dialed to manual
+   	direction = nxwcall.nxDirectionType
+   });
+   ```
+
+   Outbound
+
+   ```js
+   // Make a call
+   e.on("placeCall", function () {
+   	direction = 1
+   });
+   ```
+   
+
+
 
 #### 6. The status of the phone changes
 

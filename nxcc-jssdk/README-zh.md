@@ -12,7 +12,7 @@ jssdk在登录时，需要使用nxlink账号，也就是下面示例中获取TOK
 ## SDK使用说明
 
 ### SDK使用步骤
-1. 导入lib中的 nxwebrtc.js。
+1. 导入 [nxwebrtc.js](https://github.com/nxtele/nxcc/blob/main/nxcc-jssdk/lib/nxwebrtc.js)。
 2. 定义profile，设置 nxuser,nxpass(话机账号),logLevel,playTone等属性 ，
 3. new NxwCall(profile) 创建对象 nxwcall，并基于 nxwcall.myEvents 设置回调方法。 
 4. nxwcall会自动启动状态机，在注册成功后，进入 UA_READY 状态，可呼入呼出。
@@ -228,6 +228,36 @@ function setupEvents(nxwcall) {
 | 819  | DID号码呼叫失败。          |
 
 nxwebrtc SDK库封装了多个<a href='#eventlist'>事件通知</a>,可以在相应的事件回调函数中，和业务逻辑互动。
+
+1. ##### 呼入、呼出和自动拨号转人工场景区分
+
+   设置映射参数
+
+   ```js
+   // 0:呼入，1:呼出，2:自动拨号转人工
+   let direction
+   ```
+
+   呼入、自动拨号转人工
+
+   ```js
+   e.on("onCallReceived", function () {
+   	// nxwcall为setupEvents函数所带参数
+   	// nxDirectionType: 0:呼入，2:自动拨号转人工
+   	direction = nxwcall.nxDirectionType
+   });
+   ```
+
+   呼出
+
+   ```js
+   // 发起呼叫
+   e.on("placeCall", function () {
+     	direction = 1
+   });
+   ```
+
+
 
 #### 6. 话机状态变更
 
