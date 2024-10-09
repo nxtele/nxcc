@@ -50,9 +50,24 @@ mapFrame.onload = function() {
 }
 ```
 
+#### 3. 跳转普通坐席登录页面
 
+- 未登录：跳转至普通坐席登录
+- 已登录：不进行跳转；登出时跳转至普通坐席登录
+> SSO登录的请勿调用
+ 
+   ```js
+   // 跳转至普通坐席登录	
+   const message = {
+       type: 'toEmailLogin',
+   }
 
-#### 3. Iframe页面回调
+   iframeWin.postMessage(message, '*');
+   const mapFrame = document.getElementById("iframe")
+   const iframeWin = mapFrame.contentWindow;
+   ```
+
+#### 4. Iframe页面回调
 
 ```js
 // iframe给系统postMessage传递消息
@@ -211,7 +226,7 @@ window.parent.postMessage(data, '*');
 
    
 
-#### 4. 发起呼叫消息协议
+#### 5. 发起呼叫消息协议
 
 | 字段        | 类型       | 备注                                             |
 | ----------- | ---------- | ------------------------------------------------ |
@@ -238,10 +253,23 @@ const iframeWin = mapFrame.contentWindow;
 iframeWin.postMessage(message, '*');
 ```
 
+#### 6. 主动登出
+
+```js
+// 登出消息协议
+const message = {
+    type: 'loginOut',
+}
+   
+const mapFrame = document.getElementById("iframe")
+const iframeWin = mapFrame.contentWindow;
+iframeWin.postMessage(message, '*');
+```
 
 
-#### 5. 状态变更说明
+#### 7. 状态变更说明
 
 链接：[https://help.nxcloud.com/nxlink/docs/Iframe-duo-zhuang-tai-tiao-zhuan-shuo-ming](https://help.nxcloud.com/nxlink/docs/Iframe-duo-zhuang-tai-tiao-zhuan-shuo-ming)
 
 ![status](./img/status.png)
+
