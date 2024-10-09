@@ -311,4 +311,4 @@ iframeWin.postMessage(message, '*');
 
 Link：[https://help.nxcloud.com/nxlink/docs/Iframe-duo-zhuang-tai-tiao-zhuan-shuo-ming](https://help.nxcloud.com/nxlink/docs/Iframe-duo-zhuang-tai-tiao-zhuan-shuo-ming)
 
-![status](./img/status.png)
+![status](/images/status.png)
