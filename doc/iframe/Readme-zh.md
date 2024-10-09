@@ -1,5 +1,38 @@
-## 牛信云呼叫中心Iframe对接文档
+## 嵌入式客户端
 
+#### 概览
+
+NXLink嵌入式客户端是 NXLink 联络中心服务的变体，可以在第三方系统内，也可以作为与任何 Web 应用程序一起使用的浏览器扩展。借助 NXLink Embeddable Framework，您可以开发自己的 NXLink集成。 这些集成支持各种交互类型和功能，例如点击拨号、屏幕弹出等。
+
+#### 用户界面
+
+您可以从客户端访问菜单并更改状态和电话。 该菜单允许您快速执行常见任务，例如接听来电、拨打电话或更改设置。
+
+![p1](/images/p1.png)
+
+#### 支持的交互类型
+
+接听来电-与任何其他互动一样，座席在客户端接听呼叫。
+
+外呼拨号-座席可以直接、或使用点击拨号拨打外线电话。
+
+通话记录-坐席可以查询到所有的历史通话记录。
+
+#### 可实现的CRM 功能
+
+点击拨号-点击号码或者发起通话图标即可发起呼叫，按照自定义的集成配置。
+
+交互日志-查询所有座席的详细交互日志。
+
+#### 架构
+
+下图显示了 NXLink嵌入式客户端的所有组件的架构。
+
+![p2](/images/p2.png)
+
+
+
+#### 开发文档
 
 
 #### 1. Iframe域名地址，加载方式
@@ -21,7 +54,7 @@ https://nxlink.nxcloud.com/admin/#/nxcc
 | email       | string | 账号（邮箱）                                                 |
 | password    | string | 密码                                                         |
 | lang        | string | 语言，目前支持中文（zh-CN），英文（en-US），西班牙语（es-MX） |
-| loginMethod | number | 0：普通坐席登录（传参登录），1：谷歌 SSO登录（该登录方式下，不需要传email和password，默认跳转sso登录页面）。    *不传该字段，默认跳转账号密码输入登陆页面。 |
+| loginMethod | number | 0：普通坐席登录（传参登录），1：谷歌 SSO登录（该登录方式下，不需要传email和password，默认跳转sso登录页面）。 |
 
 ```js
 // loginMethod：0，普通坐席登录
@@ -43,6 +76,7 @@ const message = {
     }
 }
 
+// 使用该方法传递给嵌入的iframe
 const mapFrame = document.getElementById("iframe")
 mapFrame.onload = function() {
 	const iframeWin = mapFrame.contentWindow;
@@ -67,11 +101,15 @@ mapFrame.onload = function() {
    const iframeWin = mapFrame.contentWindow;
    ```
 
-#### 4. Iframe页面回调
+#### 4. Iframe页面相关回调
 
-```js
-// iframe给系统postMessage传递消息
-window.parent.postMessage(data, '*');
+可使用下述方法接收消息协议，可根据协议上的type区分消息类型
+
+```
+window.addEventListener( "message",(event) => {
+  // 打印接收到的数据
+  consolelog(event.data.type)
+},false);
 ```
 
 
@@ -127,7 +165,7 @@ window.parent.postMessage(data, '*');
    | 6              | 账号未登录   |
    | -1             | 话机注册失败 |
 
-   *浏览器多Tab页面表现为同步，当某一tab通话状态变更以后，其他tab的状态会保持一致；如Atab为通话中，其他tab也同步为通话中
+   *浏览器多Tab页面表现为同步，当某一tab通话状态变更以后，其他tab的状态会保持一致；如一个tab为通话中，其他tab也同步为通话中
 
    当话机状态为呼出中(0)、呼入中(1)、通话中(2)、挂断(5)的通话状态时，会返回以下字段
 
@@ -248,15 +286,16 @@ const message = {
     }
 }
 
+// 使用该方法传递给嵌入的iframe
 const mapFrame = document.getElementById("iframe")
 const iframeWin = mapFrame.contentWindow;
 iframeWin.postMessage(message, '*');
 ```
 
-#### 6. 主动登出
+#### 6. Proactively log out
 
 ```js
-// 登出消息协议
+// Logout message protocol
 const message = {
     type: 'loginOut',
 }
