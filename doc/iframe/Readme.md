@@ -14,7 +14,7 @@ https://nxlink.nxcloud.com/admin/#/nxcc
 
 
 
-#### 2. Initialize Configuration Parameters and Register Phone
+#### 2. Silent Login
 
 | Field       | Type   | Description                                                  |
 | ----------- | ------ | ------------------------------------------------------------ |
@@ -50,9 +50,25 @@ mapFrame.onload = function() {
 }
 ```
 
+#### 3. Redirect to Login Page for Manual Login
+
+- Not logged in: redirected to regular seat login
+- Already logged in: No redirection; Jump to regular seat login when logging out
+> Do not call SSO login
+ 
+   ```js
+   // Jump to regular seat login	
+   const message = {
+       type: 'toEmailLogin'
+   }
+
+   iframeWin.postMessage(message, '*');
+   const mapFrame = document.getElementById("iframe")
+   const iframeWin = mapFrame.contentWindow;
+   ```
 
 
-#### 3. Iframe Page Callback
+#### 4. Iframe Page Callback
 
 ```js
 // iframe sends message to the system via postMessage
@@ -211,7 +227,7 @@ window.parent.postMessage(data, '*');
 
    
 
-#### 4. Initiate Call Message Protocol
+#### 5. Initiate Call Message Protocol
 
 | Field       | Type       | Description                                                  |
 | ----------- | ---------- | ------------------------------------------------------------ |
@@ -240,9 +256,21 @@ const iframeWin = mapFrame.contentWindow;
 iframeWin.postMessage(message, '*');
 ```
 
+#### 6. Proactively log out
+
+```js
+// Logout message protocol
+const message = {
+    type: 'loginOut'
+}
+   
+const mapFrame = document.getElementById("iframe")
+const iframeWin = mapFrame.contentWindow;
+iframeWin.postMessage(message, '*');
+```
 
 
-#### 5. Status Change Description
+#### 7. Status Change Description
 
 Link：[https://help.nxcloud.com/nxlink/docs/Iframe-duo-zhuang-tai-tiao-zhuan-shuo-ming](https://help.nxcloud.com/nxlink/docs/Iframe-duo-zhuang-tai-tiao-zhuan-shuo-ming)
 
