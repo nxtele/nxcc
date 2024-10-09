@@ -14,7 +14,7 @@ https://nxlink.nxcloud.com/admin/#/nxcc
 
 
 
-#### 2. Initialize Configuration Parameters and Register Phone
+#### 2. Silent Login
 
 | Field       | Type   | Description                                                  |
 | ----------- | ------ | ------------------------------------------------------------ |
@@ -50,7 +50,7 @@ mapFrame.onload = function() {
 }
 ```
 
-#### 3. Jump to the login page for regular seats
+#### 3. Redirect to Login Page for Manual Login
 
 - Not logged in: redirected to regular seat login
 - Already logged in: No redirection; Jump to regular seat login when logging out
