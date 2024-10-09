@@ -2,29 +2,29 @@
 
 
 
-#### 1. Iframe URL，Loading method
+#### 1. Iframe域名地址，加载方式
 
 https://nxlink.nxcloud.com/admin/#/nxcc
 
 ```js
-// Create iframe
-// Suggest a width of 256px and a height of 460px
+// 创建iframe
+// 建议width为256px，height为460px
 <iframe id="iframe" allow="camera *; microphone *; autoplay *; hid *" src="https://nxlink.nxcloud.com/admin/#/nxcc"></iframe>
 ```
 
 
 
-#### 2. Initialize Configuration Parameters and Register Phone
+#### 2. 初始化配置参数，登录注册话机
 
-| Field       | Type   | Description                                                  |
+| 字段        | 类型   | 备注                                                         |
 | ----------- | ------ | ------------------------------------------------------------ |
-| email       | string | Account (email)                                              |
-| password    | string | Password                                                     |
-| lang        | string | Language, currently supports Chinese (zh-CN), English (en-US), Spanish (es-MX) |
-| loginMethod | number | Number0: Normal agent login (parameter transfer login), 1: Google SSO login (under this login method, there is no need to transfer email and password, and the default login page will be redirected to SSO)                                                                 * Do not send this field, default to redirecting to the login page with the account password input. |
+| email       | string | 账号（邮箱）                                                 |
+| password    | string | 密码                                                         |
+| lang        | string | 语言，目前支持中文（zh-CN），英文（en-US），西班牙语（es-MX） |
+| loginMethod | number | 0：普通坐席登录（传参登录），1：谷歌 SSO登录（该登录方式下，不需要传email和password，默认跳转sso登录页面）。    *不传该字段，默认跳转账号密码输入登陆页面。 |
 
 ```js
-// loginMethod：0，Agent login
+// loginMethod：0，普通坐席登录
 const message = {
     type: 'init',
     content: {
@@ -34,7 +34,7 @@ const message = {
         loginMethod：0
     }
 }
-// loginMethod：1，Google SSO Login Message Protocol
+// loginMethod：1，谷歌 SSO登录消息协议
 const message = {
     type: 'init',
     content: {
@@ -50,28 +50,43 @@ mapFrame.onload = function() {
 }
 ```
 
+#### 3. 跳转普通坐席登录页面
 
+- 未登录：跳转至普通坐席登录
+- 已登录：不进行跳转；登出时跳转至普通坐席登录
+> SSO登录的请勿调用
+ 
+   ```js
+   // 跳转至普通坐席登录	
+   const message = {
+       type: 'toEmailLogin',
+   }
 
-#### 3. Iframe Page Callback
+   iframeWin.postMessage(message, '*');
+   const mapFrame = document.getElementById("iframe")
+   const iframeWin = mapFrame.contentWindow;
+   ```
+
+#### 4. Iframe页面回调
 
 ```js
-// iframe sends message to the system via postMessage
+// iframe给系统postMessage传递消息
 window.parent.postMessage(data, '*');
 ```
 
 
-1. ##### Account Login Successful
+1. ##### 账号登入成功消息协议
 
-   If the login account has an agent, the following fields are passed; if there is no agent, no fields are passed.
+   登录账号存在坐席时回调传递以下字段，无坐席不传递
 
-   | Field   | Type   | Description        |
-   | ------- | ------ | ------------------ |
-   | email   | string | Login account      |
-   | sipNum  | string | Phone number       |
-   | groupNo | string | Agent group number |
+   | 字段    | 类型   | 备注       |
+   | ------- | ------ | ---------- |
+   | email   | string | 登录账号   |
+   | sipNum  | string | 话机号     |
+   | groupNo | string | 坐席组编号 |
 
    ```js
-   // Message protocol for iframe callback
+   // iframe回调的消息协议
    event.data:{
        type: 'login',
        content: {
@@ -82,15 +97,15 @@ window.parent.postMessage(data, '*');
    }
    ```
 
-2. ##### Whether the Login Account Has an Agent
+2. ##### 登录账号是否存在坐席
 
-      | code | Description                                                  |
-      | ---- | ------------------------------------------------------------ |
-      | 1    | The account has an agent                                     |
-      | 2    | The account does not have an agent or the agent status is closed |
+      | Code（number） | 备注                               |
+      | -------------- | ---------------------------------- |
+      | 1              | 该账号存在坐席                     |
+      | 2              | 该账号不存在坐席或者坐席状态已关闭 |
 
       ```js
-      // Message protocol for iframe callback
+      // iframe回调的消息协议
       event.data:{
           type: 'agentExists',
           content: {
@@ -99,38 +114,38 @@ window.parent.postMessage(data, '*');
       }
       ```
 
-3. ##### Phone Status and Callback Messages
+3. ##### 话机状态和回调消息
 
-   | Code（number） | Seat phone status             |
-   | -------------- | ----------------------------- |
-   | 0              | Calling out ringing           |
-   | 1              | Incoming ringing              |
-   | 2              | In call                       |
-   | 3              | Phone disconnected            |
-   | 4              | Phone registered successfully |
-   | 5              | Hung up                       |
-   | 6              | Account not logged in         |
-   | -1             | Phone registration failed     |
+   | Code（number） | 坐席话机状态 |
+   | -------------- | ------------ |
+   | 0              | 呼出振铃中   |
+   | 1              | 呼入振铃中   |
+   | 2              | 通话中       |
+   | 3              | 话机断开     |
+   | 4              | 话机注册成功 |
+   | 5              | 挂断         |
+   | 6              | 账号未登录   |
+   | -1             | 话机注册失败 |
 
-   *The browser's multi tab pages appear synchronized, and when a tab's call status changes, the status of other tabs will remain consistent; If Atab is in call, other tabs will also be synchronized as in call.
+   *浏览器多Tab页面表现为同步，当某一tab通话状态变更以后，其他tab的状态会保持一致；如Atab为通话中，其他tab也同步为通话中
 
-   When the phone status is dialing out (0), incoming call (1), in call (2), or hung up (5), the following fields are returned:
-   
-   | Field                  | Type        | Description                                                  |
-   | ---------------------- | ----------- | ------------------------------------------------------------ |
-   | callId                 | string      | Call ID                                                      |
-   | direction              | number      | Call scenario: 0 for incoming, 1 for outgoing, 2 for auto-dial to agent |
-   | caller                 | string      | Caller number                                                |
-   | callee                 | string      | Callee number                                                |
-   | orderId                | string      | Custom user ID, string, 32 characters                        |
-   | params                 | json string | User defined fields returned on outbound call, supporting JSON strings |
-   | callStartTimestamp     | number(ms)  | Timestamp when call is initiated/received                    |
-   | callConnectedTimestamp | number(ms)  | Timestamp when call is connected                             |
-   | callHangUpTimestamp    | number(ms)  | Timestamp when call is hung up                               |
-   | other                  | json string | User defined fields returned on incoming calls               |
-   
+   当话机状态为呼出中(0)、呼入中(1)、通话中(2)、挂断(5)的通话状态时，会返回以下字段
+
+   | 字段                   | 类型         | 备注                                       |
+   | ---------------------- | ------------ | ------------------------------------------ |
+   | callId                 | string       | 通话 id                                    |
+   | direction              | number       | 通话场景，0:呼入，1:呼出，2:自动拨号转人工 |
+   | caller                 | string       | 主叫号码                                   |
+   | callee                 | string       | 被叫号码                                   |
+   | orderId                | string       | 回传的用户自定义id，字符串，32位           |
+   | params                 | json string  | 呼出时回传的用户自定义字段，支持json字符串 |
+   | callStartTimestamp     | number(毫秒) | 时间戳，当发起呼叫/接收来电时生成          |
+   | callConnectedTimestamp | number(毫秒) | 时间戳，当接听电话时生成                   |
+   | callHangUpTimestamp    | number(毫秒) | 时间戳，挂断电话后生成                     |
+   | other                  | json string  | 呼入时回传的用户自定义字段                 |
+
    ```js
-   // Message protocol for iframe callback
+   // iframe回调的消息协议
    event.data:{
        type: 'dialStatus',
        content: {
@@ -147,42 +162,42 @@ window.parent.postMessage(data, '*');
        }
    }
    ```
-   
-   ###### Hanging Reason Mapping
-   
-   | Code | Reason for hanging up                          |
-   | ---- | ---------------------------------------------- |
-   | 810  | Balance is insufficient                        |
-   | 811  | The country is restricted from calling         |
-   | 812  | Incorrect number                               |
-   | 813  | Login has expired, please login again          |
-   | 814  | Call failed (blacklisted number)               |
-   | 815  | Call failed (call limit reached)               |
-   | 816  | Current number cannot be used                  |
-   | 800  | Network abnormal                               |
-   | 801  | Network abnormal                               |
-   | 817  | Today's call experience limit has been reached |
-   | 819  | DID number call failed                         |
+
+   ###### 挂断原因映射
+
+    | Code | 挂断原因                   |
+    | ---- | -------------------------- |
+    | 810  | 话机已欠费                 |
+    | 811  | 不允许呼叫的国家           |
+    | 812  | 号码不正确                 |
+    | 813  | 登录信息已过期，请重新登录 |
+    | 814  | 呼叫失败（黑名单号码）     |
+    | 815  | 呼叫失败（呼叫次数限制）   |
+    | 816  | 当前号码无法使用           |
+    | 800  | 网络异常                   |
+    | 801  | 网络异常                   |
+    | 817  | 今日呼叫体验已上限。       |
+    | 819  | DID号码呼叫失败。          |
 
 
 
 
-4. ##### Seat status
+4. ##### 坐席状态
 
-   | code（number） | Description                                                  |
+   | code（number） | 备注                                                         |
    | -------------- | ------------------------------------------------------------ |
-   | 1              | Work - idle, can call in and out                             |
-   | 2              | Work - busy (including initiating/receiving calls, returning this code during calls, and organizing), only able to make outgoing calls |
-   | 3              | Rest - Meeting, can only be called out                       |
-   | 4              | Rest - Eat, only able to exhale                              |
-   | 5              | Rest - Toilet, only able to exhale                           |
-   | 6              | Rest - Sleepping, only able to exhale                        |
-   | 7              | Rest - Other, can only exhale                                |
+   | 1              | 工作-示闲，可呼入呼出                                        |
+   | 2              | 工作-示忙（发起呼叫/接收来电、通话中、整理中也返回此code），仅能呼出 |
+   | 3              | 休息-会议，仅能呼出                                          |
+   | 4              | 休息-吃饭，仅能呼出                                          |
+   | 5              | 休息-厕所，仅能呼出                                          |
+   | 6              | 休息-睡觉，仅能呼出                                          |
+   | 7              | 休息-其他，仅能呼出                                          |
 
-   *Browser multi tab page performance: When a tab's seat status changes and switches to other tabs, the status will remain consistent
+   *浏览器多Tab页面表现：当某一tab坐席状态进行变更，切换其他tab以后，状态会保持一致
 
    ```js
-   // Message protocol for iframe callback
+   // iframe回调的消息协议
    event.data:{
        type: 'agentStatus',
        content: {
@@ -191,19 +206,19 @@ window.parent.postMessage(data, '*');
    }
    ```
 
-5. ##### Logout Message Protocol
+5. ##### 登出消息协议
 
    ```js
-   // Message protocol for iframe callback
+   // iframe回调的消息协议
    event.data:{
        type: 'logout'
    }
    ```
 
-6. ##### Token Invalidation Message Protocol
+6. ##### token失效消息协议
 
    ```js
-   // Message protocol for iframe callback
+   // iframe回调的消息协议
    event.data:{
        type: 'tokenInvalid'
    }
@@ -211,17 +226,15 @@ window.parent.postMessage(data, '*');
 
    
 
-#### 4. Initiate Call Message Protocol
+#### 5. 发起呼叫消息协议
 
-| Field       | Type       | Description                                                  |
-| ----------- | ---------- | ------------------------------------------------------------ |
-| caller      | string(32) | caller，The caller will call out based on a random number when passing through the air |
-| callee      | string(32) | callee, should include country code, e.g., for Hong Kong:852*** |
-| countryCode | string     | callee country code                                          |
-| orderId     | string(32) | custom orderId, optional                                     |
-| params      | string     | custom fields, optional                                      |
-
-
+| 字段        | 类型       | 备注                                             |
+| ----------- | ---------- | ------------------------------------------------ |
+| caller      | string(32) | 主叫号码，主叫传空将根据随机号码呼出             |
+| callee      | string(32) | 被叫号码，需带国码，例如呼叫香港方向：852******* |
+| countryCode | string     | 被叫国码                                         |
+| orderId     | string(32) | 自定义orderId，可选填                            |
+| params      | string     | 自定义字段，可选填                               |
 
 ```js
 const message = {
@@ -240,10 +253,23 @@ const iframeWin = mapFrame.contentWindow;
 iframeWin.postMessage(message, '*');
 ```
 
+#### 6. 主动登出
+
+```js
+// 登出消息协议
+const message = {
+    type: 'loginOut',
+}
+   
+const mapFrame = document.getElementById("iframe")
+const iframeWin = mapFrame.contentWindow;
+iframeWin.postMessage(message, '*');
+```
 
 
-#### 5. Status Change Description
+#### 7. 状态变更说明
 
-Link：[https://help.nxcloud.com/nxlink/docs/Iframe-duo-zhuang-tai-tiao-zhuan-shuo-ming](https://help.nxcloud.com/nxlink/docs/Iframe-duo-zhuang-tai-tiao-zhuan-shuo-ming)
+链接：[https://help.nxcloud.com/nxlink/docs/Iframe-duo-zhuang-tai-tiao-zhuan-shuo-ming](https://help.nxcloud.com/nxlink/docs/Iframe-duo-zhuang-tai-tiao-zhuan-shuo-ming)
 
 ![status](./img/status.png)
+
