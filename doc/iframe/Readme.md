@@ -1,5 +1,35 @@
-## 牛信云呼叫中心Iframe对接文档
+## Embedded Client
 
+#### Overview
+
+The NXLink embedded client is a variant of the NXLink contact center service that can be used within third-party systems or as a browser extension alongside any web application. With the NXLink Embeddable Framework, you can develop your own NXLink integrations. These integrations support various types of interactions and functionalities, such as click-to-dial and screen pops.
+
+#### User Interface
+
+You can access menus and change status and calls from the client. The menu allows you to quickly perform common tasks, such as answering calls, making calls, or changing settings.
+
+![p1](/images/p1.png)
+
+#### Supported Interaction Types
+
+Answering Calls - Agents can answer calls from the client, just like any other interaction.
+Outbound Dialing - Agents can make outbound calls directly or using click-to-dial to dial external phone numbers.
+Call History - Agents can access the history of all past calls.
+
+#### Supported CRM Functionality
+
+Click-to-Dial - Agents can initiate calls by clicking on a phone number or using a call initiation icon after configuration.
+Interaction Logs - Agents can query detailed interaction logs for all agents.
+
+#### Architecture
+
+The following diagram illustrates the architecture of all components of the NXLink embedded client.
+
+![p2](/images/p2.png)
+
+
+
+#### Developer
 
 
 #### 1. Iframe URL，Loading method
@@ -21,7 +51,7 @@ https://nxlink.nxcloud.com/admin/#/nxcc
 | email       | string | Account (email)                                              |
 | password    | string | Password                                                     |
 | lang        | string | Language, currently supports Chinese (zh-CN), English (en-US), Spanish (es-MX) |
-| loginMethod | number | Number0: Normal agent login (parameter transfer login), 1: Google SSO login (under this login method, there is no need to transfer email and password, and the default login page will be redirected to SSO)                                                                 * Do not send this field, default to redirecting to the login page with the account password input. |
+| loginMethod | number | Number0: Normal agent login (parameter transfer login), 1: Google SSO login (under this login method, there is no need to transfer email and password, and the default login page will be redirected to SSO)  |
 
 ```js
 // loginMethod：0，Agent login
@@ -43,6 +73,7 @@ const message = {
     }
 }
 
+// Pass it to the embedded iframe using this method.
 const mapFrame = document.getElementById("iframe")
 mapFrame.onload = function() {
 	const iframeWin = mapFrame.contentWindow;
@@ -59,7 +90,7 @@ mapFrame.onload = function() {
    ```js
    // Jump to regular seat login	
    const message = {
-       type: 'toEmailLogin'
+       type: 'toEmailLogin',
    }
 
    iframeWin.postMessage(message, '*');
@@ -70,10 +101,15 @@ mapFrame.onload = function() {
 
 #### 4. Iframe Page Callback
 
-```js
-// iframe sends message to the system via postMessage
-window.parent.postMessage(data, '*');
+You can receive message protocols using the following methods, and differentiate message types based on the 'type' field in the protocol.
+
 ```
+window.addEventListener( "message",(event) => {
+  // Print the received data.
+  consolelog(event.data.type)
+},false);
+```
+
 
 
 1. ##### Account Login Successful
@@ -128,7 +164,7 @@ window.parent.postMessage(data, '*');
    | 6              | Account not logged in         |
    | -1             | Phone registration failed     |
 
-   *The browser's multi tab pages appear synchronized, and when a tab's call status changes, the status of other tabs will remain consistent; If Atab is in call, other tabs will also be synchronized as in call.
+   *The browser's multi tab pages appear synchronized, and when a tab's call status changes, the status of other tabs will remain consistent; If a tab is in call, other tabs will also be synchronized as in call.
 
    When the phone status is dialing out (0), incoming call (1), in call (2), or hung up (5), the following fields are returned:
    
@@ -227,7 +263,7 @@ window.parent.postMessage(data, '*');
 
    
 
-#### 5. Initiate Call Message Protocol
+#### 4. Initiate Call Message Protocol
 
 | Field       | Type       | Description                                                  |
 | ----------- | ---------- | ------------------------------------------------------------ |
@@ -251,6 +287,7 @@ const message = {
     }
 }
 
+// Pass it to the embedded iframe using this method.
 const mapFrame = document.getElementById("iframe")
 const iframeWin = mapFrame.contentWindow;
 iframeWin.postMessage(message, '*');
@@ -261,9 +298,9 @@ iframeWin.postMessage(message, '*');
 ```js
 // Logout message protocol
 const message = {
-    type: 'loginOut'
+    type: 'loginOut',
 }
-   
+
 const mapFrame = document.getElementById("iframe")
 const iframeWin = mapFrame.contentWindow;
 iframeWin.postMessage(message, '*');
