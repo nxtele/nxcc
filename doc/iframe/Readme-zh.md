@@ -59,28 +59,28 @@ https://nxlink.nxcloud.com/admin/#/nxcc
 ```js
 // loginMethod：0，普通坐席登录
 const message = {
-    type: 'init',
-    content: {
-        email：email，
-    	password： password，
-        lang: "zh-CN",
-        loginMethod：0
-    }
+  type: 'init',
+  content: {
+      email：email，
+    password： password，
+      lang: "zh-CN",
+      loginMethod：0
+  }
 }
 // loginMethod：1，谷歌 SSO登录消息协议
 const message = {
-    type: 'init',
-    content: {
-        lang: "zh-CN",
-        loginMethod：1
-    }
+  type: 'init',
+  content: {
+      lang: "zh-CN",
+      loginMethod：1
+  }
 }
 
 // 使用该方法传递给嵌入的iframe
 const mapFrame = document.getElementById("iframe")
 mapFrame.onload = function() {
-	const iframeWin = mapFrame.contentWindow;
-	iframeWin.postMessage(message, '*');
+  const iframeWin = mapFrame.contentWindow;
+  iframeWin.postMessage(message, '*');
 }
 ```
 
@@ -89,17 +89,18 @@ mapFrame.onload = function() {
 - 未登录：跳转至普通坐席登录
 - 已登录：不进行跳转；登出时跳转至普通坐席登录
 > SSO登录的请勿调用
- 
-   ```js
-   // 跳转至普通坐席登录	
-   const message = {
-       type: 'toEmailLogin',
-   }
 
-   iframeWin.postMessage(message, '*');
-   const mapFrame = document.getElementById("iframe")
-   const iframeWin = mapFrame.contentWindow;
-   ```
+  ```js
+  // 跳转至普通坐席登录	
+  const message = {
+    type: 'toEmailLogin',
+  }
+
+ 
+  const mapFrame = document.getElementById("iframe")
+  const iframeWin = mapFrame.contentWindow;
+  iframeWin.postMessage(message, '*');
+  ```
 
 #### 4. Iframe页面相关回调
 
@@ -113,154 +114,154 @@ window.addEventListener( "message",(event) => {
 ```
 
 
-1. ##### 账号登入成功消息协议
+1. ###### 账号登入成功消息协议
 
-   登录账号存在坐席时回调传递以下字段，无坐席不传递
+  登录账号存在坐席时回调传递以下字段，无坐席不传递
 
-   | 字段    | 类型   | 备注       |
-   | ------- | ------ | ---------- |
-   | email   | string | 登录账号   |
-   | sipNum  | string | 话机号     |
-   | groupNo | string | 坐席组编号 |
-
-   ```js
-   // iframe回调的消息协议
-   event.data:{
-       type: 'login',
-       content: {
-         email: '',
-         sipNum: '',
-         groupNo: ''    
-       }
-   }
-   ```
-
-2. ##### 登录账号是否存在坐席
-
-      | Code（number） | 备注                               |
-      | -------------- | ---------------------------------- |
-      | 1              | 该账号存在坐席                     |
-      | 2              | 该账号不存在坐席或者坐席状态已关闭 |
-
-      ```js
-      // iframe回调的消息协议
-      event.data:{
-          type: 'agentExists',
-          content: {
-            code: 1
-          }
-      }
-      ```
-
-3. ##### 话机状态和回调消息
-
-   | Code（number） | 坐席话机状态 |
-   | -------------- | ------------ |
-   | 0              | 呼出振铃中   |
-   | 1              | 呼入振铃中   |
-   | 2              | 通话中       |
-   | 3              | 话机断开     |
-   | 4              | 话机注册成功 |
-   | 5              | 挂断         |
-   | 6              | 账号未登录   |
-   | -1             | 话机注册失败 |
-
-   *浏览器多Tab页面表现为同步，当某一tab通话状态变更以后，其他tab的状态会保持一致；如一个tab为通话中，其他tab也同步为通话中
-
-   当话机状态为呼出中(0)、呼入中(1)、通话中(2)、挂断(5)的通话状态时，会返回以下字段
-
-   | 字段                   | 类型         | 备注                                       |
-   | ---------------------- | ------------ | ------------------------------------------ |
-   | callId                 | string       | 通话 id                                    |
-   | direction              | number       | 通话场景，0:呼入，1:呼出，2:自动拨号转人工 |
-   | caller                 | string       | 主叫号码                                   |
-   | callee                 | string       | 被叫号码                                   |
-   | orderId                | string       | 回传的用户自定义id，字符串，32位           |
-   | params                 | json string  | 呼出时回传的用户自定义字段，支持json字符串 |
-   | callStartTimestamp     | number(毫秒) | 时间戳，当发起呼叫/接收来电时生成          |
-   | callConnectedTimestamp | number(毫秒) | 时间戳，当接听电话时生成                   |
-   | callHangUpTimestamp    | number(毫秒) | 时间戳，挂断电话后生成                     |
-   | other                  | json string  | 呼入时回传的用户自定义字段                 |
+  | 字段    | 类型   | 备注       |
+  | ------- | ------ | ---------- |
+  | email   | string | 登录账号   |
+  | sipNum  | string | 话机号     |
+  | groupNo | string | 坐席组编号 |
 
    ```js
-   // iframe回调的消息协议
-   event.data:{
-       type: 'dialStatus',
-       content: {
-         code: 0,
-         callId: '',
-         orderId: '',
-         direction: 1,
-         caller: '',
-         callee: '',
-         params: '',
-         callStartTimestamp: '',
-         callConnectedTimestamp: '',
-         callHangUpTimestamp: ''
-       }
-   }
+  // iframe回调的消息协议
+  event.data:{
+    type: 'login',
+    content: {
+      email: '',
+      sipNum: '',
+      groupNo: ''    
+    }
+  }
    ```
+
+2. ###### 登录账号是否存在坐席
+
+  | Code（number） | 备注                               |
+  | -------------- | ---------------------------------- |
+  | 1              | 该账号存在坐席                     |
+  | 2              | 该账号不存在坐席或者坐席状态已关闭 |
+
+  ```js
+  // iframe回调的消息协议
+  event.data:{
+    type: 'agentExists',
+    content: {
+      code: 1
+    }
+  }
+  ```
+
+3. ###### 话机状态和回调消息
+
+  | Code（number） | 坐席话机状态 |
+  | -------------- | ------------ |
+  | 0              | 呼出振铃中   |
+  | 1              | 呼入振铃中   |
+  | 2              | 通话中       |
+  | 3              | 话机断开     |
+  | 4              | 话机注册成功 |
+  | 5              | 挂断         |
+  | 6              | 账号未登录   |
+  | -1             | 话机注册失败 |
+
+  *浏览器多Tab页面表现为同步，当某一tab通话状态变更以后，其他tab的状态会保持一致；如一个tab为通话中，其他tab也同步为通话中
+
+  当话机状态为呼出中(0)、呼入中(1)、通话中(2)、挂断(5)的通话状态时，会返回以下字段
+
+  | 字段                   | 类型         | 备注                                       |
+  | ---------------------- | ------------ | ------------------------------------------ |
+  | callId                 | string       | 通话 id                                    |
+  | direction              | number       | 通话场景，0:呼入，1:呼出，2:自动拨号转人工 |
+  | caller                 | string       | 主叫号码                                   |
+  | callee                 | string       | 被叫号码                                   |
+  | orderId                | string       | 回传的用户自定义id，字符串，32位           |
+  | params                 | json string  | 呼出时回传的用户自定义字段，支持json字符串 |
+  | callStartTimestamp     | number(毫秒) | 时间戳，当发起呼叫/接收来电时生成          |
+  | callConnectedTimestamp | number(毫秒) | 时间戳，当接听电话时生成                   |
+  | callHangUpTimestamp    | number(毫秒) | 时间戳，挂断电话后生成                     |
+  | other                  | json string  | 呼入时回传的用户自定义字段                 |
+
+  ```js
+  // iframe回调的消息协议
+  event.data:{
+    type: 'dialStatus',
+    content: {
+      code: 0,
+      callId: '',
+      orderId: '',
+      direction: 1,
+      caller: '',
+      callee: '',
+      params: '',
+      callStartTimestamp: '',
+      callConnectedTimestamp: '',
+      callHangUpTimestamp: ''
+    }
+   }
+  ```
 
    ###### 挂断原因映射
 
-    | Code | 挂断原因                   |
-    | ---- | -------------------------- |
-    | 810  | 话机已欠费                 |
-    | 811  | 不允许呼叫的国家           |
-    | 812  | 号码不正确                 |
-    | 813  | 登录信息已过期，请重新登录 |
-    | 814  | 呼叫失败（黑名单号码）     |
-    | 815  | 呼叫失败（呼叫次数限制）   |
-    | 816  | 当前号码无法使用           |
-    | 800  | 网络异常                   |
-    | 801  | 网络异常                   |
-    | 817  | 今日呼叫体验已上限。       |
-    | 819  | DID号码呼叫失败。          |
+  | Code | 挂断原因                   |
+  | ---- | -------------------------- |
+  | 810  | 话机已欠费                 |
+  | 811  | 不允许呼叫的国家           |
+  | 812  | 号码不正确                 |
+  | 813  | 登录信息已过期，请重新登录 |
+  | 814  | 呼叫失败（黑名单号码）     |
+  | 815  | 呼叫失败（呼叫次数限制）   |
+  | 816  | 当前号码无法使用           |
+  | 800  | 网络异常                   |
+  | 801  | 网络异常                   |
+  | 817  | 今日呼叫体验已上限。       |
+  | 819  | DID号码呼叫失败。          |
 
 
 
 
-4. ##### 坐席状态
+4. ###### 坐席状态
 
-   | code（number） | 备注                                                         |
-   | -------------- | ------------------------------------------------------------ |
-   | 1              | 工作-示闲，可呼入呼出                                        |
-   | 2              | 工作-示忙（发起呼叫/接收来电、通话中、整理中也返回此code），仅能呼出 |
-   | 3              | 休息-会议，仅能呼出                                          |
-   | 4              | 休息-吃饭，仅能呼出                                          |
-   | 5              | 休息-厕所，仅能呼出                                          |
-   | 6              | 休息-睡觉，仅能呼出                                          |
-   | 7              | 休息-其他，仅能呼出                                          |
+  | code（number） | 备注                                                         |
+  | -------------- | ------------------------------------------------------------ |
+  | 1              | 工作-示闲，可呼入呼出                                        |
+  | 2              | 工作-示忙（发起呼叫/接收来电、通话中、整理中也返回此code），仅能呼出 |
+  | 3              | 休息-会议，仅能呼出                                          |
+  | 4              | 休息-吃饭，仅能呼出                                          |
+  | 5              | 休息-厕所，仅能呼出                                          |
+  | 6              | 休息-睡觉，仅能呼出                                          |
+  | 7              | 休息-其他，仅能呼出                                          |
 
-   *浏览器多Tab页面表现：当某一tab坐席状态进行变更，切换其他tab以后，状态会保持一致
+  *浏览器多Tab页面表现：当某一tab坐席状态进行变更，切换其他tab以后，状态会保持一致
 
-   ```js
-   // iframe回调的消息协议
-   event.data:{
-       type: 'agentStatus',
-       content: {
-         code: 1
-       }
-   }
-   ```
+  ```js
+  // iframe回调的消息协议
+  event.data:{
+    type: 'agentStatus',
+    content: {
+      code: 1
+    }
+  }
+  ```
 
-5. ##### 登出消息协议
+5. ###### 登出消息协议
 
-   ```js
-   // iframe回调的消息协议
-   event.data:{
-       type: 'logout'
-   }
-   ```
+  ```js
+  // iframe回调的消息协议
+  event.data:{
+    type: 'logout'
+  }
+  ```
 
-6. ##### token失效消息协议
+6. ###### token失效消息协议
 
-   ```js
-   // iframe回调的消息协议
-   event.data:{
-       type: 'tokenInvalid'
-   }
-   ```
+  ```js
+  // iframe回调的消息协议
+  event.data:{
+    type: 'tokenInvalid'
+  }
+  ```
 
    
 
@@ -276,14 +277,14 @@ window.addEventListener( "message",(event) => {
 
 ```js
 const message = {
-    type: 'callOut',
-    content: {
-        caller: '',
-  		callee: "8524444",
-  		countryCode: "852",
-  		orderId: "66493f1afaa3",
-        params： ""
-    }
+  type: 'callOut',
+  content: {
+    caller: '',
+    callee: "8524444",
+    countryCode: "852",
+    orderId: "66493f1afaa3",
+    params：""
+  }
 }
 
 // 使用该方法传递给嵌入的iframe
@@ -292,12 +293,12 @@ const iframeWin = mapFrame.contentWindow;
 iframeWin.postMessage(message, '*');
 ```
 
-#### 6. Proactively log out
+#### 6. 主动登出
 
 ```js
-// Logout message protocol
+// 登出消息协议
 const message = {
-    type: 'loginOut',
+  type: 'loginOut',
 }
    
 const mapFrame = document.getElementById("iframe")
@@ -311,4 +312,83 @@ iframeWin.postMessage(message, '*');
 链接：[https://help.nxcloud.com/nxlink/docs/Iframe-duo-zhuang-tai-tiao-zhuan-shuo-ming](https://help.nxcloud.com/nxlink/docs/Iframe-duo-zhuang-tai-tiao-zhuan-shuo-ming)
 
 ![status](/images/status.png)
+
+
+#### 8. 自定义配置
+
+| 字段    | 类型   |  必填   | 备注   |
+| ------- | ------ | ----- |  ---------- |
+| dialDisabled   | boolean  | 否 |是否禁止拨号盘外呼【 默认允许】，true:禁止，false:允许    |
+| callbackDisabled  | boolean | 否 |通话记录列表是否显示回拨按钮【默认不显示】，true:不显示，false:显示|
+| callingBgUrl | string | 否 |通话时背景图 |
+| offlineDisable | boolean | 否 |是否禁止播放离线提示音，true:禁止，false:允许 |
+
+  ```js
+  const message = {
+    type: "userCustomConfig",
+    content: {
+      dialDisabled: false,
+      callbackDisabled: true,
+    }
+  }
+
+
+
+  // 可在登录成功后，接收到login回调后传递自定义配置信息
+  window.addEventListener( "message",(event) => {
+    consolelog(event.data.type)
+    if (event.data.type == "login") {
+      // 传递自定义配置
+    }
+  },false);
+  ```
+
+#### 9. 自定义按钮
+
+  | 字段    | 类型   |   必填  |备注       |
+  | ------- | ------ | ------ | ---------- |
+  | show | boolean | 是 | 是否显示按钮   |
+  | buttonText | string | 是 | 按钮内容   |
+  | eventName| string | 是 |  自定义事件名称     |
+  | style| object| 是 | 按钮样式 |
+
+  ```js
+  const message = {
+    type: "userCustomButton",
+    content: {
+      show: true,
+      buttonText: '按钮',
+      eventName: 'myEvent',
+      style: {
+        "width": "40px",
+        "height": "40px",
+        "font-size": "14px",
+        "color": "#333",
+        "display": "flex",
+        "justify-content": "center",
+        "align-items": "center",
+        "position": "absolute",
+        "left": "25px",
+        "bottom": "50px",
+        "border-radius": "50%",
+        "background-color": "#f5f5f5",
+        "cursor": "pointer",
+      }, // 举例
+    }
+  };
+
+
+  const mapFrame = document.getElementById("iframe")
+  const iframeWin = mapFrame.contentWindow;
+  iframeWin.postMessage(message, '*');
+
+
+  // 当点击页面自定义按钮时，iframe回调"myEvent"自定义事件，用户端接收自定义事件消息
+  window.addEventListener( "message",(event) => {
+    consolelog(event.data.type)
+    if (event.data.type == "myEvent") {
+      // ...
+    }
+  },false);
+  ```
 
