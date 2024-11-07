@@ -56,21 +56,21 @@ https://nxlink.nxcloud.com/admin/#/nxcc
 ```js
 // loginMethod：0，Agent login
 const message = {
-    type: 'init',
-    content: {
-        email：email，
-    	password： password，
-        lang: "zh-CN",
-        loginMethod：0
-    }
+  type: 'init',
+  content: {
+    email：email，
+    password： password，
+    lang: "zh-CN",
+    loginMethod：0
+  }
 }
 // loginMethod：1，Google SSO Login Message Protocol
 const message = {
-    type: 'init',
-    content: {
-        lang: "zh-CN",
-        loginMethod：1
-    }
+  type: 'init',
+  content: {
+    lang: "zh-CN",
+    loginMethod：1
+  }
 }
 
 // Pass it to the embedded iframe using this method.
@@ -86,18 +86,17 @@ mapFrame.onload = function() {
 - Not logged in: redirected to regular seat login
 - Already logged in: No redirection; Jump to regular seat login when logging out
 > Do not call SSO login
- 
-   ```js
-   // Jump to regular seat login	
-   const message = {
-       type: 'toEmailLogin',
-   }
 
-   iframeWin.postMessage(message, '*');
-   const mapFrame = document.getElementById("iframe")
-   const iframeWin = mapFrame.contentWindow;
-   ```
+  ```js
+  // Jump to regular seat login	
+  const message = {
+      type: 'toEmailLogin',
+  }
 
+  iframeWin.postMessage(message, '*');
+  const mapFrame = document.getElementById("iframe")
+  const iframeWin = mapFrame.contentWindow;
+  ```
 
 #### 4. Iframe Page Callback
 
@@ -112,158 +111,158 @@ window.addEventListener( "message",(event) => {
 
 
 
-1. ##### Account Login Successful
+1. ###### Account Login Successful
 
-   If the login account has an agent, the following fields are passed; if there is no agent, no fields are passed.
+  If the login account has an agent, the following fields are passed; if there is no agent, no fields are passed.
 
-   | Field   | Type   | Description        |
-   | ------- | ------ | ------------------ |
-   | email   | string | Login account      |
-   | sipNum  | string | Phone number       |
-   | groupNo | string | Agent group number |
+  | Field   | Type   | Description        |
+  | ------- | ------ | ------------------ |
+  | email   | string | Login account      |
+  | sipNum  | string | Phone number       |
+  | groupNo | string | Agent group number |
 
-   ```js
-   // Message protocol for iframe callback
-   event.data:{
-       type: 'login',
-       content: {
-         email: '',
-         sipNum: '',
-         groupNo: ''    
-       }
+  ```js
+  // Message protocol for iframe callback
+  event.data:{
+    type: 'login',
+    content: {
+      email: '',
+      sipNum: '',
+      groupNo: ''    
+    }
+  }
+  ```
+
+2. ###### Whether the Login Account Has an Agent
+
+  | code | Description                                                  |
+  | ---- | ------------------------------------------------------------ |
+  | 1    | The account has an agent                                     |
+  | 2    | The account does not have an agent or the agent status is closed |
+
+  ```js
+  // Message protocol for iframe callback
+  event.data:{
+    type: 'agentExists',
+    content: {
+      code: 1
+    }
+  }
+  ```
+
+3. ###### Phone Status and Callback Messages
+
+  | Code（number） | Seat phone status             |
+  | -------------- | ----------------------------- |
+  | 0              | Calling out ringing           |
+  | 1              | Incoming ringing              |
+  | 2              | In call                       |
+  | 3              | Phone disconnected            |
+  | 4              | Phone registered successfully |
+  | 5              | Hung up                       |
+  | 6              | Account not logged in         |
+  | -1             | Phone registration failed     |
+
+  *The browser's multi tab pages appear synchronized, and when a tab's call status changes, the status of other tabs will remain consistent; If a tab is in call, other tabs will also be synchronized as in call.
+
+  When the phone status is dialing out (0), incoming call (1), in call (2), or hung up (5), the following fields are returned:
+  
+  | Field                  | Type        | Description                                                  |
+  | ---------------------- | ----------- | ------------------------------------------------------------ |
+  | callId                 | string      | Call ID                                                      |
+  | direction              | number      | Call scenario: 0 for incoming, 1 for outgoing, 2 for auto-dial to agent |
+  | caller                 | string      | Caller number                                                |
+  | callee                 | string      | Callee number                                                |
+  | orderId                | string      | Custom user ID, string, 32 characters                        |
+  | params                 | json string | User defined fields returned on outbound call, supporting JSON strings |
+  | callStartTimestamp     | number(ms)  | Timestamp when call is initiated/received                    |
+  | callConnectedTimestamp | number(ms)  | Timestamp when call is connected                             |
+  | callHangUpTimestamp    | number(ms)  | Timestamp when call is hung up                               |
+  | other                  | json string | User defined fields returned on incoming calls               |
+  
+  ```js
+  // Message protocol for iframe callback
+  event.data:{
+    type: 'dialStatus',
+    content: {
+      code: 0,
+      callId: '',
+      orderId: '',
+      direction: 1,
+      caller: '',
+      callee: '',
+      params: '',
+      callStartTimestamp: '',
+      callConnectedTimestamp: '',
+      callHangUpTimestamp: ''
+    }
    }
    ```
-
-2. ##### Whether the Login Account Has an Agent
-
-      | code | Description                                                  |
-      | ---- | ------------------------------------------------------------ |
-      | 1    | The account has an agent                                     |
-      | 2    | The account does not have an agent or the agent status is closed |
-
-      ```js
-      // Message protocol for iframe callback
-      event.data:{
-          type: 'agentExists',
-          content: {
-            code: 1
-          }
-      }
-      ```
-
-3. ##### Phone Status and Callback Messages
-
-   | Code（number） | Seat phone status             |
-   | -------------- | ----------------------------- |
-   | 0              | Calling out ringing           |
-   | 1              | Incoming ringing              |
-   | 2              | In call                       |
-   | 3              | Phone disconnected            |
-   | 4              | Phone registered successfully |
-   | 5              | Hung up                       |
-   | 6              | Account not logged in         |
-   | -1             | Phone registration failed     |
-
-   *The browser's multi tab pages appear synchronized, and when a tab's call status changes, the status of other tabs will remain consistent; If a tab is in call, other tabs will also be synchronized as in call.
-
-   When the phone status is dialing out (0), incoming call (1), in call (2), or hung up (5), the following fields are returned:
    
-   | Field                  | Type        | Description                                                  |
-   | ---------------------- | ----------- | ------------------------------------------------------------ |
-   | callId                 | string      | Call ID                                                      |
-   | direction              | number      | Call scenario: 0 for incoming, 1 for outgoing, 2 for auto-dial to agent |
-   | caller                 | string      | Caller number                                                |
-   | callee                 | string      | Callee number                                                |
-   | orderId                | string      | Custom user ID, string, 32 characters                        |
-   | params                 | json string | User defined fields returned on outbound call, supporting JSON strings |
-   | callStartTimestamp     | number(ms)  | Timestamp when call is initiated/received                    |
-   | callConnectedTimestamp | number(ms)  | Timestamp when call is connected                             |
-   | callHangUpTimestamp    | number(ms)  | Timestamp when call is hung up                               |
-   | other                  | json string | User defined fields returned on incoming calls               |
-   
-   ```js
-   // Message protocol for iframe callback
-   event.data:{
-       type: 'dialStatus',
-       content: {
-         code: 0,
-         callId: '',
-         orderId: '',
-         direction: 1,
-         caller: '',
-         callee: '',
-         params: '',
-         callStartTimestamp: '',
-         callConnectedTimestamp: '',
-         callHangUpTimestamp: ''
-       }
-   }
-   ```
-   
-   ###### Hanging Reason Mapping
-   
-   | Code | Reason for hanging up                          |
-   | ---- | ---------------------------------------------- |
-   | 810  | Balance is insufficient                        |
-   | 811  | The country is restricted from calling         |
-   | 812  | Incorrect number                               |
-   | 813  | Login has expired, please login again          |
-   | 814  | Call failed (blacklisted number)               |
-   | 815  | Call failed (call limit reached)               |
-   | 816  | Current number cannot be used                  |
-   | 800  | Network abnormal                               |
-   | 801  | Network abnormal                               |
-   | 817  | Today's call experience limit has been reached |
-   | 819  | DID number call failed                         |
+  ###### Hanging Reason Mapping
+  
+  | Code | Reason for hanging up                          |
+  | ---- | ---------------------------------------------- |
+  | 810  | Balance is insufficient                        |
+  | 811  | The country is restricted from calling         |
+  | 812  | Incorrect number                               |
+  | 813  | Login has expired, please login again          |
+  | 814  | Call failed (blacklisted number)               |
+  | 815  | Call failed (call limit reached)               |
+  | 816  | Current number cannot be used                  |
+  | 800  | Network abnormal                               |
+  | 801  | Network abnormal                               |
+  | 817  | Today's call experience limit has been reached |
+  | 819  | DID number call failed                         |
 
 
 
 
-4. ##### Seat status
+4. ###### Seat status
 
-   | code（number） | Description                                                  |
-   | -------------- | ------------------------------------------------------------ |
-   | 1              | Work - idle, can call in and out                             |
-   | 2              | Work - busy (including initiating/receiving calls, returning this code during calls, and organizing), only able to make outgoing calls |
-   | 3              | Rest - Meeting, can only be called out                       |
-   | 4              | Rest - Eat, only able to exhale                              |
-   | 5              | Rest - Toilet, only able to exhale                           |
-   | 6              | Rest - Sleepping, only able to exhale                        |
-   | 7              | Rest - Other, can only exhale                                |
+  | code（number） | Description                                                  |
+  | -------------- | ------------------------------------------------------------ |
+  | 1              | Work - idle, can call in and out                             |
+  | 2              | Work - busy (including initiating/receiving calls, returning this code during calls, and organizing), only able to make outgoing calls |
+  | 3              | Rest - Meeting, can only be called out                       |
+  | 4              | Rest - Eat, only able to exhale                              |
+  | 5              | Rest - Toilet, only able to exhale                           |
+  | 6              | Rest - Sleepping, only able to exhale                        |
+  | 7              | Rest - Other, can only exhale                                |
 
-   *Browser multi tab page performance: When a tab's seat status changes and switches to other tabs, the status will remain consistent
+  *Browser multi tab page performance: When a tab's seat status changes and switches to other tabs, the status will remain consistent
 
-   ```js
-   // Message protocol for iframe callback
-   event.data:{
-       type: 'agentStatus',
-       content: {
-         code: 1
-       }
-   }
-   ```
+  ```js
+  // Message protocol for iframe callback
+  event.data:{
+    type: 'agentStatus',
+    content: {
+      code: 1
+    }
+  }
+  ```
 
-5. ##### Logout Message Protocol
+5. ###### Logout Message Protocol
 
-   ```js
-   // Message protocol for iframe callback
-   event.data:{
-       type: 'logout'
-   }
-   ```
+  ```js
+  // Message protocol for iframe callback
+  event.data:{
+    type: 'logout'
+  }
+  ```
 
-6. ##### Token Invalidation Message Protocol
+6. ###### Token Invalidation Message Protocol
 
-   ```js
-   // Message protocol for iframe callback
-   event.data:{
-       type: 'tokenInvalid'
-   }
-   ```
+  ```js
+  // Message protocol for iframe callback
+  event.data:{
+    type: 'tokenInvalid'
+  }
+  ```
 
    
 
-#### 4. Initiate Call Message Protocol
+#### 5. Initiate Call Message Protocol
 
 | Field       | Type       | Description                                                  |
 | ----------- | ---------- | ------------------------------------------------------------ |
@@ -277,14 +276,14 @@ window.addEventListener( "message",(event) => {
 
 ```js
 const message = {
-    type: 'callOut',
-    content: {
-        caller: '',
-  		callee: "8524444",
-  		countryCode: "852",
-  		orderId: "66493f1afaa3",
-        params： ""
-    }
+  type: 'callOut',
+  content: {
+    caller: '',
+    callee: "8524444",
+    countryCode: "852",
+    orderId: "66493f1afaa3",
+    params： ""
+  }
 }
 
 // Pass it to the embedded iframe using this method.
@@ -298,7 +297,7 @@ iframeWin.postMessage(message, '*');
 ```js
 // Logout message protocol
 const message = {
-    type: 'loginOut',
+  type: 'loginOut',
 }
 
 const mapFrame = document.getElementById("iframe")
@@ -312,3 +311,79 @@ iframeWin.postMessage(message, '*');
 Link：[https://help.nxcloud.com/nxlink/docs/Iframe-duo-zhuang-tai-tiao-zhuan-shuo-ming](https://help.nxcloud.com/nxlink/docs/Iframe-duo-zhuang-tai-tiao-zhuan-shuo-ming)
 
 ![status](/images/status.png)
+
+#### 8. Custom configuration
+| Field | Type | Required | Description|
+| ------- | ------ | ----- |  ---------- |
+| dialDisabled   | boolean  | No | Do you want to disable dial out calls? [Default allowed], true: disable, false: allow    |
+| callbackDisabled  | boolean | No |Whether the call history list displays the callback button [default not displayed], true: not displayed, false: displayed |
+| callingBgUrl | string | No | Background image during call |
+| offlineDisable | boolean | No |Should offline prompt sounds be disabled? true: disable, false: allow |
+
+```js
+const message = {
+  type: "userCustomConfig",
+  content: {
+    dialDisabled: false,
+    callbackDisabled: true,
+  }
+}
+
+
+// After successful login, custom configuration information can be passed upon receiving the login callback
+window.addEventListener( "message",(event) => {
+  consolelog(event.data.type)
+  if (event.data.type == "login") {
+    // Pass custom configuration
+  }
+},false);
+```
+
+#### 9. Custom Button
+  | Field | Type | Required | Description|
+  | ------- | ------ | ------ | ---------- |
+  | show | boolean | No | Show Button   |
+  | buttonText | string | No | Button Content   |
+  | eventName| string | No |  Custom event name     |
+  | style| object| No | Button style |
+
+  ```js
+  const message = {
+    type: "userCustomButton",
+    content: {
+      show: true,
+      buttonText: 'Click',
+      eventName: 'myEvent',
+      style: {
+        "width": "40px",
+        "height": "40px",
+        "font-size": "14px",
+        "color": "#333",
+        "display": "flex",
+        "justify-content": "center",
+        "align-items": "center",
+        "position": "absolute",
+        "left": "25px",
+        "bottom": "50px",
+        "border-radius": "50%",
+        "background-color": "#f5f5f5",
+        "cursor": "pointer",
+      }, // Example
+    }
+    };
+
+
+  const mapFrame = document.getElementById("iframe")
+  const iframeWin = mapFrame.contentWindow;
+  iframeWin.postMessage(message, '*');
+
+
+  // When the page customization button is clicked, the iframe calls back the "myEvent" custom event, and the user end receives the custom event message
+  window.addEventListener( "message",(event) => {
+    consolelog(event.data.type)
+    if (event.data.type == "myEvent") {
+      // ...
+    }
+  },false);
+  ```
+
